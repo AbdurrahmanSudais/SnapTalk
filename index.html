@@ -1,49 +1,49 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SnapTalk</title>
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="index.css"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <!-- Authentication Section -->
-  <div id="auth-section" class="auth-section">
-    <h2>Welcome to SnapTalk</h2>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
+  <div id="auth-container" class="card">
+    <h2>SnapTalk</h2>
+    <input type="email" id="email" placeholder="Email" required/>
+    <input type="password" id="password" placeholder="Password" required/>
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign Up</button>
+    <p><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
   </div>
 
-  <!-- Username Section -->
-  <div id="username-section" class="username-section" style="display: none;">
-    <h2>Create Your Username</h2>
-    <input type="text" id="username" placeholder="Username" required>
-    <button id="saveUsernameBtn">Save Username</button>
+  <div id="app-container" class="hidden">
+    <header>
+      <h1>SnapTalk</h1>
+      <button onclick="logout()">Logout</button>
+    </header>
+
+    <section class="new-post">
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <button onclick="createPost()">Post</button>
+    </section>
+
+    <section id="feed"></section>
   </div>
 
-  <!-- Home Section -->
-  <div id="home-section" class="home-section" style="display: none;">
-    <h2>Welcome, <span id="displayName"></span></h2>
-    <button id="logoutBtn">Logout</button>
-
-    <!-- Post Form -->
-    <div class="post-form">
-      <textarea id="postContent" placeholder="Write a post..."></textarea>
-      <input type="file" id="imageInput">
-      <button id="postBtn">Post</button>
-    </div>
-
-    <!-- Post Feed -->
-    <div id="postsContainer"></div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgKkJr0-fAwPMLPbOaG-SAMPLEKEYxx",
+      authDomain: "snaptalk-abdurrahman.firebaseapp.com",
+      projectId: "snaptalk-abdurrahman",
+      storageBucket: "snaptalk-abdurrahman.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:abc123def456ghi789jkl"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
 
   <script src="index.js"></script>
 </body>
