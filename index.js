@@ -1,9 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, updateDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
   authDomain: "snaptalk-b8369.firebaseapp.com",
@@ -18,7 +17,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// UI Elements
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -37,7 +35,7 @@ const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
 
-// Sign Up
+// Sign up
 signupBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -50,7 +48,7 @@ signupBtn.onclick = async () => {
   }
 };
 
-// Save Username
+// Save username
 saveUsernameBtn.onclick = async () => {
   const username = usernameInput.value.trim();
   if (!username) return alert("Enter a valid username");
@@ -99,7 +97,7 @@ function showHome() {
   loadPosts();
 }
 
-// Post feed
+// Create post
 postBtn.onclick = async () => {
   const content = postContent.value.trim();
   const file = imageInput.files[0];
@@ -116,15 +114,14 @@ postBtn.onclick = async () => {
     content,
     imageUrl,
     username: auth.currentUser.displayName,
-    createdAt: serverTimestamp(),
-    likes: 0,
-    comments: []
+    createdAt: serverTimestamp()
   });
 
   postContent.value = "";
   imageInput.value = "";
 };
 
+// Load posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
@@ -137,41 +134,8 @@ function loadPosts() {
         <h4>${post.username}</h4>
         <p>${post.content}</p>
         ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-        <button class="likeBtn" data-id="${doc.id}">Like (${post.likes})</button>
-        <input type="text" placeholder="Comment..." class="commentInput" data-id="${doc.id}" />
-        <button class="commentBtn" data-id="${doc.id}">Comment</button>
-        <div class="comments">
-          ${post.comments.map(comment => `<p>${comment}</p>`).join('')}
-        </div>
       `;
       postsContainer.appendChild(div);
-    });
-
-    document.querySelectorAll(".likeBtn").forEach(btn => {
-      btn.onclick = async (e) => {
-        const postId = e.target.getAttribute("data-id");
-        const postRef = doc(db, "posts", postId);
-        const postSnap = await getDoc(postRef);
-        const postData = postSnap.data();
-        const updatedLikes = postData.likes + 1;
-        await updateDoc(postRef, { likes: updatedLikes });
-      };
-    });
-
-    document.querySelectorAll(".commentBtn").forEach(btn => {
-      btn.onclick = async (e) => {
-        const postId = e.target.getAttribute("data-id");
-        const commentInput = document.querySelector(`.commentInput[data-id='${postId}']`);
-        const comment = commentInput.value.trim();
-        if (comment) {
-          const postRef = doc(db, "posts", postId);
-          const postSnap = await getDoc(postRef);
-          const postData = postSnap.data();
-          postData.comments.push(comment);
-          await updateDoc(postRef, { comments: postData.comments });
-          commentInput.value = ""; // Clear comment input after posting
-        }
-      };
     });
   });
 }
