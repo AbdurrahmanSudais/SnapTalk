@@ -115,9 +115,9 @@ function loadPosts() {
         <p>${post.content}</p>
         ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" />` : ""}
         <div class="like-comment">
-          <button class="like-btn" onclick="toggleLike('${postId}')">Like</button>
+          <button class="like-btn" onclick="toggleLike('${postId}')">❤️</button>
           <span class="likes-count">${post.likes || 0} Likes</span>
-          <button class="comment-btn" onclick="showComments('${postId}')">Comment</button>
+          <button class="comment-btn" onclick="showComments('${postId}')">reply</button>
           <span class="comments-count">${post.comments || 0} Comments</span>
         </div>
         <div id="comments-${postId}" class="comments-section"></div>
@@ -141,7 +141,7 @@ postBtn.onclick = async () => {
     imageUrl = await getDownloadURL(imageRef);
   }
 
-  await addDoc(collection(db, "posts"), {
+  const newPostRef = await addDoc(collection(db, "posts"), {
     content,
     username: user.displayName,
     timestamp: serverTimestamp(),
@@ -164,8 +164,9 @@ async function toggleLike(postId) {
   const user = auth.currentUser;
   const postLikes = post.likes || 0;
 
+  // Increment the number of likes
   await updateDoc(postRef, {
-    likes: postLikes + 1
+    likes: increment(1)
   });
 }
 
@@ -193,5 +194,12 @@ async function addComment(postId) {
     timestamp: serverTimestamp()
   });
 
+  // Increment the number of comments
+  const postRef = doc(db, "posts", postId);
+  await updateDoc(postRef, {
+    comments: increment(1)
+  });
+
   commentInput.value = "";
-}
+  loadPosts(); // Refresh posts
+    }
