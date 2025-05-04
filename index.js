@@ -1,8 +1,32 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  updateProfile,
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  addDoc,
+  onSnapshot,
+  serverTimestamp,
+  query,
+  orderBy,
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -23,13 +47,16 @@ const storage = getStorage(app);
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
+
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
 const logoutBtn = document.getElementById("logoutBtn");
+const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 const usernameInput = document.getElementById("username");
 const saveUsernameBtn = document.getElementById("saveUsernameBtn");
+
 const displayName = document.getElementById("displayName");
 const postContent = document.getElementById("postContent");
 const postBtn = document.getElementById("postBtn");
@@ -65,6 +92,18 @@ loginBtn.onclick = async () => {
   const password = passwordInput.value;
   try {
     await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Forgot Password
+forgotPasswordBtn.onclick = async () => {
+  const email = emailInput.value.trim();
+  if (!email) return alert("Enter your email to reset password");
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Password reset email sent!");
   } catch (err) {
     alert(err.message);
   }
@@ -116,15 +155,12 @@ postBtn.onclick = async () => {
     imageUrl,
     username: auth.currentUser.displayName,
     createdAt: serverTimestamp(),
-    likes: 0,
-    comments: []
   });
 
   postContent.value = "";
   imageInput.value = "";
 };
 
-// Load posts with like and comment functionality
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
@@ -137,34 +173,8 @@ function loadPosts() {
         <h4>${post.username}</h4>
         <p>${post.content}</p>
         ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-        <button class="like-btn" onclick="likePost('${doc.id}', ${post.likes})">
-          Like (${post.likes})
-        </button>
-        <button class="comment-btn" onclick="commentOnPost('${doc.id}')">
-          Comment
-        </button>
-        <div class="comments-section" id="comments-${doc.id}">
-          ${post.comments.map(comment => `<p>${comment}</p>`).join('')}
-        </div>
       `;
       postsContainer.appendChild(div);
     });
   });
-}
-
-// Like functionality
-function likePost(postId, currentLikes) {
-  const postRef = doc(db, "posts", postId);
-  updateDoc(postRef, { likes: currentLikes + 1 });
-}
-
-// Comment functionality
-function commentOnPost(postId) {
-  const commentText = prompt("Enter your comment:");
-  if (commentText) {
-    const postRef = doc(db, "posts", postId);
-    updateDoc(postRef, {
-      comments: arrayUnion(commentText)
-    });
-  }
-            }
+    }
