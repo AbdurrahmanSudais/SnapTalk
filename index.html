@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SnapTalk</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="script.js" defer></script>
+</head>
+<body>
+  <div id="auth-section" class="auth-box">
+    <h1>SnapTalk</h1>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
+  </div>
+
+  <div id="username-section" class="auth-box" style="display:none">
+    <h2>Choose a Username</h2>
+    <input type="text" id="username" placeholder="Username" required />
+    <button id="saveUsernameBtn">Continue</button>
+  </div>
+
+  <div id="home-section" style="display:none">
+    <div class="top-bar">
+      <span id="displayName"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="post-area">
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <input type="file" id="imageInput" accept="image/*" />
+      <button id="postBtn">Post</button>
+    </div>
+
+    <div id="postsContainer"></div>
+  </div>
+</body>
+</html>
+
