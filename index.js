@@ -160,4 +160,11 @@ function likePost(postId, currentLikes) {
 
 // Comment functionality
 function commentOnPost(postId) {
-  const comment =
+  const commentText = prompt("Enter your comment:");
+  if (commentText) {
+    const postRef = doc(db, "posts", postId);
+    updateDoc(postRef, {
+      comments: arrayUnion(commentText)
+    });
+  }
+}
