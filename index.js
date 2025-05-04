@@ -14,7 +14,6 @@ const firebaseConfig = {
   appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -76,6 +75,23 @@ loginBtn.onclick = async () => {
 // Logout
 logoutBtn.onclick = () => signOut(auth);
 
+// Password Reset
+document.getElementById("resetPasswordBtn").onclick = async () => {
+  const email = emailInput.value;
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Password reset email sent.");
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Show/Hide Password
+document.getElementById("showPassword").onclick = () => {
+  const passwordField = passwordInput;
+  passwordField.type = passwordField.type === "password" ? "text" : "password";
+};
+
 // Auth state
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -93,7 +109,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Show Home
 function showHome() {
   displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
   authSection.style.display = "none";
@@ -126,7 +141,6 @@ postBtn.onclick = async () => {
   imageInput.value = "";
 };
 
-// Load posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
@@ -139,26 +153,10 @@ function loadPosts() {
         <h4>${post.username}</h4>
         <p>${post.content}</p>
         ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
+        <button>Like</button>
+        <button>Comment</button>
       `;
       postsContainer.appendChild(div);
     });
   });
-}
-
-// Forgot Password
-document.getElementById("forgotPasswordLink").addEventListener("click", function () {
-  const email = prompt("Enter your email address to reset password");
-  if (email) {
-    sendPasswordResetEmail(email);
-  }
-});
-
-function sendPasswordResetEmail(email) {
-  sendPasswordResetEmail(auth, email)
-    .then(() => {
-      alert("Password reset email sent! Check your inbox.");
-    })
-    .catch((error) => {
-      alert("Error: " + error.message);
-    });
 }
