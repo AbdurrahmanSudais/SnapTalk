@@ -1,13 +1,13 @@
-// Import Firebase modules
+// Firebase module imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  sendPasswordResetEmail,
   onAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import {
   getFirestore,
@@ -19,13 +19,13 @@ import {
   onSnapshot,
   serverTimestamp,
   query,
-  orderBy,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL,
+  getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 // Firebase config
@@ -38,12 +38,13 @@ const firebaseConfig = {
   appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// UI Elements
+// UI References
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -53,7 +54,8 @@ const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
+const forgotBtn = document.getElementById("forgotPasswordBtn");
+
 const usernameInput = document.getElementById("username");
 const saveUsernameBtn = document.getElementById("saveUsernameBtn");
 
@@ -63,10 +65,11 @@ const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
 
-// Sign Up
+// Event Listeners
 signupBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
+
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     authSection.style.display = "none";
@@ -76,20 +79,10 @@ signupBtn.onclick = async () => {
   }
 };
 
-// Save Username
-saveUsernameBtn.onclick = async () => {
-  const username = usernameInput.value.trim();
-  if (!username) return alert("Enter a valid username");
-  const user = auth.currentUser;
-  await updateProfile(user, { displayName: username });
-  await setDoc(doc(db, "users", user.uid), { username });
-  showHome();
-};
-
-// Login
 loginBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
+
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
@@ -97,10 +90,12 @@ loginBtn.onclick = async () => {
   }
 };
 
-// Forgot Password
-forgotPasswordBtn.onclick = async () => {
-  const email = emailInput.value.trim();
-  if (!email) return alert("Enter your email to reset password");
+logoutBtn.onclick = () => signOut(auth);
+
+forgotBtn.onclick = async () => {
+  const email = emailInput.value;
+  if (!email) return alert("Enter your email to receive reset link.");
+
   try {
     await sendPasswordResetEmail(auth, email);
     alert("Password reset email sent!");
@@ -109,10 +104,17 @@ forgotPasswordBtn.onclick = async () => {
   }
 };
 
-// Logout
-logoutBtn.onclick = () => signOut(auth);
+saveUsernameBtn.onclick = async () => {
+  const username = usernameInput.value.trim();
+  if (!username) return alert("Enter a valid username");
 
-// Auth state
+  const user = auth.currentUser;
+  await updateProfile(user, { displayName: username });
+  await setDoc(doc(db, "users", user.uid), { username });
+  showHome();
+};
+
+// Auth State Listener
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -129,6 +131,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// Show Home UI
 function showHome() {
   displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
   authSection.style.display = "none";
@@ -137,11 +140,11 @@ function showHome() {
   loadPosts();
 }
 
-// Post feed
+// Post creation
 postBtn.onclick = async () => {
   const content = postContent.value.trim();
   const file = imageInput.files[0];
-  if (!content && !file) return alert("Enter content or choose an image");
+  if (!content && !file) return alert("Write something or choose an image");
 
   let imageUrl = "";
   if (file) {
@@ -161,6 +164,7 @@ postBtn.onclick = async () => {
   imageInput.value = "";
 };
 
+// Load Posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
@@ -177,4 +181,4 @@ function loadPosts() {
       postsContainer.appendChild(div);
     });
   });
-    }
+}
