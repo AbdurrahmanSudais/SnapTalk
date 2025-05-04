@@ -1,6 +1,6 @@
 // Import Firebase modules from CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
@@ -14,6 +14,7 @@ const firebaseConfig = {
   appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -92,6 +93,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// Show Home
 function showHome() {
   displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
   authSection.style.display = "none";
@@ -124,6 +126,7 @@ postBtn.onclick = async () => {
   imageInput.value = "";
 };
 
+// Load posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
@@ -132,8 +135,30 @@ function loadPosts() {
       const post = doc.data();
       const div = document.createElement("div");
       div.className = "post";
-      div.innerHTML = `<h4>${post.username}</h4><p>${post.content}</p> ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}`;
+      div.innerHTML = `
+        <h4>${post.username}</h4>
+        <p>${post.content}</p>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
+      `;
       postsContainer.appendChild(div);
     });
   });
+}
+
+// Forgot Password
+document.getElementById("forgotPasswordLink").addEventListener("click", function () {
+  const email = prompt("Enter your email address to reset password");
+  if (email) {
+    sendPasswordResetEmail(email);
+  }
+});
+
+function sendPasswordResetEmail(email) {
+  sendPasswordResetEmail(auth, email)
+    .then(() => {
+      alert("Password reset email sent! Check your inbox.");
+    })
+    .catch((error) => {
+      alert("Error: " + error.message);
+    });
 }
