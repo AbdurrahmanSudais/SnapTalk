@@ -4,47 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SnapTalk</title>
-  <link rel="stylesheet" href="index.css"/>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <div id="auth-container" class="card">
-    <h2>SnapTalk</h2>
-    <input type="email" id="email" placeholder="Email" required/>
-    <input type="password" id="password" placeholder="Password" required/>
-    <button onclick="login()">Login</button>
-    <button onclick="signup()">Sign Up</button>
-    <p><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
+  <h1>SnapTalk</h1>
+
+  <div id="auth-section">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
   </div>
 
-  <div id="app-container" class="hidden">
-    <header>
-      <h1>SnapTalk</h1>
-      <button onclick="logout()">Logout</button>
-    </header>
+  <div id="username-section" style="display:none;">
+    <input type="text" id="username" placeholder="Choose a username" />
+    <button id="saveUsernameBtn">Save Username</button>
+  </div>
 
-    <section class="new-post">
+  <div id="home-section" style="display:none;">
+    <div id="user-info">
+      <span id="displayName"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div id="create-post">
       <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-      <button onclick="createPost()">Post</button>
-    </section>
+      <input type="file" id="imageInput" />
+      <button id="postBtn">Post</button>
+    </div>
 
-    <section id="feed"></section>
+    <div id="postsContainer"></div>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDgKkJr0-fAwPMLPbOaG-SAMPLEKEYxx",
-      authDomain: "snaptalk-abdurrahman.firebaseapp.com",
-      projectId: "snaptalk-abdurrahman",
-      storageBucket: "snaptalk-abdurrahman.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abc123def456ghi789jkl"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
-  <script src="index.js"></script>
+  <script type="module" src="index.js"></script>
 </body>
 </html>
