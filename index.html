@@ -1,37 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SnapTalk - Login</title>
-  <link rel="stylesheet" href="index.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnapTalk</title>
+  <link rel="stylesheet" href="index.css"> <!-- Link to CSS file -->
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js"></script>
 </head>
 <body>
+  <!-- Auth Section -->
   <div id="auth-section">
-    <h2>Login / Sign Up</h2>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <input type="checkbox" id="showPassword" /> Show Password <br />
+    <h1>SnapTalk</h1>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
     <button id="loginBtn">Login</button>
     <button id="signupBtn">Sign Up</button>
-    <button id="resetPasswordBtn">Forgot Password?</button>
+    <p>Forgot password? <a href="javascript:void(0)" id="forgotPasswordLink">Click Here</a></p>
   </div>
 
+  <!-- Username Section (after sign up) -->
   <div id="username-section" style="display: none;">
-    <h2>Choose a Username</h2>
-    <input type="text" id="username" placeholder="Enter username" />
-    <button id="saveUsernameBtn">Continue</button>
+    <h1>SnapTalk</h1>
+    <input type="text" id="username" placeholder="Enter a username">
+    <button id="saveUsernameBtn">Save Username</button>
   </div>
 
+  <!-- Home Section (after login) -->
   <div id="home-section" style="display: none;">
-    <h2 id="displayName"></h2>
-    <button id="logoutBtn">Logout</button>
-    <textarea id="postContent" placeholder="Say something..."></textarea>
-    <input type="file" id="imageInput" />
+    <h1>SnapTalk</h1>
+    <p>Welcome back, <span id="displayName"></span></p>
+    <textarea id="postContent" placeholder="Write something..."></textarea>
+    <input type="file" id="imageInput">
     <button id="postBtn">Post</button>
     <div id="postsContainer"></div>
+    <button id="logoutBtn">Logout</button>
   </div>
 
-  <script type="module" src="index.js"></script>
+  <script src="index.js"></script> <!-- Link to JS file -->
 </body>
 </html>
