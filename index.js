@@ -167,4 +167,4 @@ function commentOnPost(postId) {
       comments: arrayUnion(commentText)
     });
   }
-}
+            }
