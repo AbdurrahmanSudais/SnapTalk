@@ -1,28 +1,37 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SnapTalk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SnapTalk - Login</title>
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <div id="auth-section" class="card">
-    <h2>Welcome to SnapTalk</h2>
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
+  <div id="auth-section">
+    <h2>Login / Sign Up</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <input type="checkbox" id="showPassword" /> Show Password <br />
     <button id="loginBtn">Login</button>
     <button id="signupBtn">Sign Up</button>
-    <p id="forgotPassword">Forgot password?</p>
-  </div>  <div id="username-section" class="card" style="display: none;">
+    <button id="resetPasswordBtn">Forgot Password?</button>
+  </div>
+
+  <div id="username-section" style="display: none;">
     <h2>Choose a Username</h2>
-    <input type="text" id="username" placeholder="Username" required />
+    <input type="text" id="username" placeholder="Enter username" />
     <button id="saveUsernameBtn">Continue</button>
-  </div>  <div id="home-section" class="card" style="display: none;">
+  </div>
+
+  <div id="home-section" style="display: none;">
     <h2 id="displayName"></h2>
-    <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-    <input type="file" id="imageInput" accept="image/*" />
-    <button id="postBtn">Post</button>
     <button id="logoutBtn">Logout</button>
+    <textarea id="postContent" placeholder="Say something..."></textarea>
+    <input type="file" id="imageInput" />
+    <button id="postBtn">Post</button>
     <div id="postsContainer"></div>
-  </div>  <script type="module" src="index.js"></script></body>
+  </div>
+
+  <script type="module" src="index.js"></script>
+</body>
 </html>
