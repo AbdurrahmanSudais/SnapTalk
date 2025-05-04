@@ -104,3 +104,30 @@ button:hover {
   border-radius: 8px;
   margin-top: 10px;
 }
+
+.like-comment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.like-comment .like-btn,
+.like-comment .comment-btn {
+  background: #4e54c8;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.like-comment .like-btn:hover,
+.like-comment .comment-btn:hover {
+  background: #373fad;
+}
+
+.likes-count,
+.comments-count {
+  font-size: 0.9rem;
+  color: #555;
+}
