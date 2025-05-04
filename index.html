@@ -1,51 +1,50 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SnapTalk</title>
-  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
-  <div class="container">
-    <h1 class="app-title">SnapTalk</h1>
-
-    <!-- Auth Section -->
-    <section id="auth-section">
-      <h2>Login or Sign Up</h2>
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
-      <div class="button-group">
-        <button id="loginBtn">Login</button>
-        <button id="signupBtn">Sign Up</button>
-      </div>
-      <button id="forgotPasswordBtn" class="link">Forgot Password?</button>
-    </section>
-
-    <!-- Username Section -->
-    <section id="username-section" style="display: none;">
-      <h2>Set Username</h2>
-      <input type="text" id="username" placeholder="Choose a username" />
-      <button id="saveUsernameBtn">Save Username</button>
-    </section>
-
-    <!-- Home Section -->
-    <section id="home-section" style="display: none;">
-      <div class="top-bar">
-        <span id="displayName"></span>
-        <button id="logoutBtn">Logout</button>
-      </div>
-
-      <div class="post-box">
-        <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-        <input type="file" id="imageInput" />
-        <button id="postBtn">Post</button>
-      </div>
-
-      <div id="postsContainer" class="posts"></div>
-    </section>
+  <!-- Authentication Section -->
+  <div id="auth-section" class="auth-section">
+    <h2>Welcome to SnapTalk</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
   </div>
 
-  <script type="module" src="index.js"></script>
+  <!-- Username Section -->
+  <div id="username-section" class="username-section" style="display: none;">
+    <h2>Create Your Username</h2>
+    <input type="text" id="username" placeholder="Username" required>
+    <button id="saveUsernameBtn">Save Username</button>
+  </div>
+
+  <!-- Home Section -->
+  <div id="home-section" class="home-section" style="display: none;">
+    <h2>Welcome, <span id="displayName"></span></h2>
+    <button id="logoutBtn">Logout</button>
+
+    <!-- Post Form -->
+    <div class="post-form">
+      <textarea id="postContent" placeholder="Write a post..."></textarea>
+      <input type="file" id="imageInput">
+      <button id="postBtn">Post</button>
+    </div>
+
+    <!-- Post Feed -->
+    <div id="postsContainer"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js"></script>
+
+  <script src="index.js"></script>
 </body>
 </html>
