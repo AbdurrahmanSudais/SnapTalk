@@ -1,32 +1,7 @@
-// Firebase module imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile,
-  sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  addDoc,
-  onSnapshot,
-  serverTimestamp,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -38,13 +13,12 @@ const firebaseConfig = {
   appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// UI References
+// UI Elements
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -54,8 +28,6 @@ const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const forgotBtn = document.getElementById("forgotPasswordBtn");
-
 const usernameInput = document.getElementById("username");
 const saveUsernameBtn = document.getElementById("saveUsernameBtn");
 
@@ -65,11 +37,10 @@ const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
 
-// Event Listeners
+// Sign Up
 signupBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
-
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     authSection.style.display = "none";
@@ -79,10 +50,20 @@ signupBtn.onclick = async () => {
   }
 };
 
+// Save Username
+saveUsernameBtn.onclick = async () => {
+  const username = usernameInput.value.trim();
+  if (!username) return alert("Enter a valid username");
+  const user = auth.currentUser;
+  await updateProfile(user, { displayName: username });
+  await setDoc(doc(db, "users", user.uid), { username });
+  showHome();
+};
+
+// Login
 loginBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
-
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
@@ -90,31 +71,10 @@ loginBtn.onclick = async () => {
   }
 };
 
+// Logout
 logoutBtn.onclick = () => signOut(auth);
 
-forgotBtn.onclick = async () => {
-  const email = emailInput.value;
-  if (!email) return alert("Enter your email to receive reset link.");
-
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent!");
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-saveUsernameBtn.onclick = async () => {
-  const username = usernameInput.value.trim();
-  if (!username) return alert("Enter a valid username");
-
-  const user = auth.currentUser;
-  await updateProfile(user, { displayName: username });
-  await setDoc(doc(db, "users", user.uid), { username });
-  showHome();
-};
-
-// Auth State Listener
+// Auth state
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -131,7 +91,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Show Home UI
 function showHome() {
   displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
   authSection.style.display = "none";
@@ -140,45 +99,99 @@ function showHome() {
   loadPosts();
 }
 
-// Post creation
+// Load posts
+function loadPosts() {
+  const postsQuery = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+  onSnapshot(postsQuery, (snapshot) => {
+    postsContainer.innerHTML = "";
+    snapshot.forEach(async (doc) => {
+      const post = doc.data();
+      const postId = doc.id;
+      const postElement = document.createElement("div");
+      postElement.classList.add("post");
+
+      postElement.innerHTML = `
+        <h4>${post.username}</h4>
+        <p>${post.content}</p>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" />` : ""}
+        <div class="like-comment">
+          <button class="like-btn" onclick="toggleLike('${postId}')">Like</button>
+          <span class="likes-count">${post.likes || 0} Likes</span>
+          <button class="comment-btn" onclick="showComments('${postId}')">Comment</button>
+          <span class="comments-count">${post.comments || 0} Comments</span>
+        </div>
+        <div id="comments-${postId}" class="comments-section"></div>
+      `;
+
+      postsContainer.appendChild(postElement);
+    });
+  });
+}
+
+// Post new content
 postBtn.onclick = async () => {
   const content = postContent.value.trim();
-  const file = imageInput.files[0];
-  if (!content && !file) return alert("Write something or choose an image");
+  const user = auth.currentUser;
+  if (!content) return alert("Post content cannot be empty");
 
-  let imageUrl = "";
-  if (file) {
-    const storageRef = ref(storage, `posts/${Date.now()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    imageUrl = await getDownloadURL(storageRef);
+  let imageUrl = null;
+  if (imageInput.files.length > 0) {
+    const imageRef = ref(storage, `posts/${imageInput.files[0].name}`);
+    await uploadBytes(imageRef, imageInput.files[0]);
+    imageUrl = await getDownloadURL(imageRef);
   }
 
   await addDoc(collection(db, "posts"), {
     content,
+    username: user.displayName,
+    timestamp: serverTimestamp(),
     imageUrl,
-    username: auth.currentUser.displayName,
-    createdAt: serverTimestamp(),
+    userId: user.uid,
+    likes: 0,
+    comments: 0
   });
 
   postContent.value = "";
   imageInput.value = "";
 };
 
-// Load Posts
-function loadPosts() {
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  onSnapshot(q, (snapshot) => {
-    postsContainer.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const post = doc.data();
-      const div = document.createElement("div");
-      div.className = "post";
-      div.innerHTML = `
-        <h4>${post.username}</h4>
-        <p>${post.content}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-      `;
-      postsContainer.appendChild(div);
-    });
+// Toggle like
+async function toggleLike(postId) {
+  const postRef = doc(db, "posts", postId);
+  const postSnapshot = await getDoc(postRef);
+  const post = postSnapshot.data();
+
+  const user = auth.currentUser;
+  const postLikes = post.likes || 0;
+
+  await updateDoc(postRef, {
+    likes: postLikes + 1
   });
+}
+
+// Show comments section
+function showComments(postId) {
+  const commentsSection = document.getElementById(`comments-${postId}`);
+  commentsSection.innerHTML = `
+    <input type="text" id="commentInput-${postId}" placeholder="Write a comment..." />
+    <button onclick="addComment('${postId}')">Post Comment</button>
+  `;
+}
+
+// Add comment
+async function addComment(postId) {
+  const commentInput = document.getElementById(`commentInput-${postId}`);
+  const commentText = commentInput.value.trim();
+
+  if (!commentText) return alert("Comment cannot be empty");
+
+  const user = auth.currentUser;
+
+  await addDoc(collection(db, "posts", postId, "comments"), {
+    text: commentText,
+    username: user.displayName,
+    timestamp: serverTimestamp()
+  });
+
+  commentInput.value = "";
 }
