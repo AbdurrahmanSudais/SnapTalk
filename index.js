@@ -1,6 +1,6 @@
 // Import Firebase modules from CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
@@ -75,23 +75,6 @@ loginBtn.onclick = async () => {
 // Logout
 logoutBtn.onclick = () => signOut(auth);
 
-// Password Reset
-document.getElementById("resetPasswordBtn").onclick = async () => {
-  const email = emailInput.value;
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent.");
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-// Show/Hide Password
-document.getElementById("showPassword").onclick = () => {
-  const passwordField = passwordInput;
-  passwordField.type = passwordField.type === "password" ? "text" : "password";
-};
-
 // Auth state
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -147,16 +130,14 @@ function loadPosts() {
     postsContainer.innerHTML = "";
     snapshot.forEach((doc) => {
       const post = doc.data();
-      const div = document.createElement("div");
-      div.className = "post";
-      div.innerHTML = `
-        <h4>${post.username}</h4>
+      const postElement = document.createElement("div");
+      postElement.classList.add("post");
+      postElement.innerHTML = `
+        <p><strong>${post.username}</strong> - ${new Date(post.createdAt.seconds * 1000).toLocaleString()}</p>
         <p>${post.content}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-        <button>Like</button>
-        <button>Comment</button>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%; margin-top: 10px;">` : ""}
       `;
-      postsContainer.appendChild(div);
+      postsContainer.appendChild(postElement);
     });
   });
 }
