@@ -1,7 +1,6 @@
-// Import Firebase modules from CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, updateDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 // Firebase config
@@ -168,11 +167,11 @@ function loadPosts() {
           const postRef = doc(db, "posts", postId);
           const postSnap = await getDoc(postRef);
           const postData = postSnap.data();
-          const updatedComments = [...postData.comments, comment];
-          await updateDoc(postRef, { comments: updatedComments });
-          commentInput.value = "";
+          postData.comments.push(comment);
+          await updateDoc(postRef, { comments: postData.comments });
+          commentInput.value = ""; // Clear comment input after posting
         }
       };
     });
   });
-          }
+}
