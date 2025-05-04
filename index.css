@@ -1,70 +1,78 @@
-/* Global Styles */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-/* Auth Section */
-#auth-section, #username-section, #home-section {
-  width: 100%;
-  max-width: 400px;
-  padding: 20px;
-  background-color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   text-align: center;
 }
 
-/* Inputs and buttons */
-input, button {
+.app-title {
+  background-color: #4a90e2;
+  color: white;
+  margin: 0;
+  padding: 15px 0;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 30px auto;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+input, textarea, button {
+  display: block;
   width: 100%;
-  padding: 10px;
   margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 button {
-  background-color: #5C6BC0;
+  background-color: #4a90e2;
   color: white;
+  font-weight: bold;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 button:hover {
-  background-color: #3F4A8D;
+  transform: scale(1.03);
+  background-color: #357ab7;
 }
 
-/* Posts Section */
-#postsContainer {
-  margin-top: 20px;
+.link-btn {
+  background: none;
+  color: #4a90e2;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-.post {
-  background-color: white;
-  margin-bottom: 15px;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-textarea {
-  width: 100%;
+.navbar {
+  background-color: #333;
+  color: white;
   padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
 }
 
-/* App name styling */
-h1 {
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: #3F4A8D;
+#postsContainer .post {
+  background: #fff;
+  border: 1px solid #ddd;
+  margin: 10px auto;
+  padding: 15px;
+  border-radius: 10px;
+  max-width: 500px;
+  text-align: left;
+}
+
+#postsContainer .post img {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
 }
