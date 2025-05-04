@@ -1,10 +1,32 @@
-// Import Firebase modules from CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  addDoc,
+  onSnapshot,
+  serverTimestamp,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
   authDomain: "snaptalk-b8369.firebaseapp.com",
@@ -19,7 +41,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// UI Elements
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -28,7 +49,9 @@ const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
+const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 const logoutBtn = document.getElementById("logoutBtn");
+
 const usernameInput = document.getElementById("username");
 const saveUsernameBtn = document.getElementById("saveUsernameBtn");
 
@@ -38,7 +61,6 @@ const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
 
-// Sign Up
 signupBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -51,7 +73,6 @@ signupBtn.onclick = async () => {
   }
 };
 
-// Save Username
 saveUsernameBtn.onclick = async () => {
   const username = usernameInput.value.trim();
   if (!username) return alert("Enter a valid username");
@@ -61,7 +82,6 @@ saveUsernameBtn.onclick = async () => {
   showHome();
 };
 
-// Login
 loginBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -72,10 +92,19 @@ loginBtn.onclick = async () => {
   }
 };
 
-// Logout
 logoutBtn.onclick = () => signOut(auth);
 
-// Auth state
+forgotPasswordBtn.onclick = async () => {
+  const email = emailInput.value.trim();
+  if (!email) return alert("Please enter your email to reset password.");
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Password reset email sent!");
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -100,7 +129,6 @@ function showHome() {
   loadPosts();
 }
 
-// Post feed
 postBtn.onclick = async () => {
   const content = postContent.value.trim();
   const file = imageInput.files[0];
@@ -130,14 +158,14 @@ function loadPosts() {
     postsContainer.innerHTML = "";
     snapshot.forEach((doc) => {
       const post = doc.data();
-      const postElement = document.createElement("div");
-      postElement.classList.add("post");
-      postElement.innerHTML = `
-        <p><strong>${post.username}</strong> - ${new Date(post.createdAt.seconds * 1000).toLocaleString()}</p>
+      const div = document.createElement("div");
+      div.className = "post";
+      div.innerHTML = `
+        <h4>${post.username}</h4>
         <p>${post.content}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%; margin-top: 10px;">` : ""}
+        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
       `;
-      postsContainer.appendChild(postElement);
+      postsContainer.appendChild(div);
     });
   });
 }
