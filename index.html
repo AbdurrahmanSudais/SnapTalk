@@ -4,50 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SnapTalk</title>
-  <link rel="stylesheet" href="index.css"/>
+  <link rel="stylesheet" href="index.css" />
+
+  <!-- Firebase v8 SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
-  <div class="app">
+  <div class="container">
     <h1 class="app-title">SnapTalk</h1>
 
-    <div id="auth-section">
-      <div id="login-form" class="form">
-        <h2>Login</h2>
-        <input type="email" id="login-email" placeholder="Email" />
-        <input type="password" id="login-password" placeholder="Password" />
-        <button onclick="login()">Login</button>
-        <p class="link" onclick="toggleForms()">Don't have an account? Sign up</p>
-        <p class="link" onclick="resetPassword()">Forgot Password?</p>
-      </div>
-
-      <div id="signup-form" class="form hidden">
-        <h2>Sign Up</h2>
-        <input type="text" id="signup-username" placeholder="Username" />
-        <input type="email" id="signup-email" placeholder="Email" />
-        <input type="password" id="signup-password" placeholder="Password" />
-        <button onclick="signUp()">Sign Up</button>
-        <p class="link" onclick="toggleForms()">Already have an account? Log in</p>
-      </div>
+    <div id="auth-container">
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="login-btn">Login</button>
+      <button id="signup-btn">Sign Up</button>
+      <button id="reset-btn">Forgot Password?</button>
     </div>
 
-    <div id="main-section" class="hidden">
-      <div class="top-bar">
-        <span id="user-display"></span>
-        <button onclick="logout()">Logout</button>
-      </div>
-
-      <div class="post-creator">
-        <textarea id="post-content" placeholder="What's on your mind?"></textarea>
-        <button onclick="submitPost()">Post</button>
-      </div>
-
-      <div id="feed" class="feed"></div>
+    <div id="post-container" style="display: none;">
+      <textarea id="post-input" placeholder="What's on your mind?"></textarea>
+      <button id="post-btn">Post</button>
+      <button id="logout-btn">Logout</button>
+      <div id="posts"></div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <script src="index.js"></script>
+  <script src="index.js" defer></script>
 </body>
 </html>
