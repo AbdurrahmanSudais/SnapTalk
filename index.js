@@ -1,156 +1,121 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
-
-function timeAgo(date) {
-  const seconds = Math.floor((new Date() - date) / 1000);
-  if (seconds < 60) return "Just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-  const days = Math.floor(hours / 24);
-  return `${days} day${days > 1 ? "s" : ""} ago`;
-}
-
+// SnapTalk Firebase Config (Your actual details)
 const firebaseConfig = {
-  apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
-  authDomain: "snaptalk-b8369.firebaseapp.com",
-  projectId: "snaptalk-b8369",
-  storageBucket: "snaptalk-b8369.appspot.com",
-  messagingSenderId: "442098306088",
-  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
+  apiKey: "AIzaSyBumAVQVTn4BZlFQVAu04uulOAzQ-_wU6E",
+  authDomain: "snaptalk-1ef56.firebaseapp.com",
+  projectId: "snaptalk-1ef56",
+  storageBucket: "snaptalk-1ef56.appspot.com",
+  messagingSenderId: "703116646741",
+  appId: "1:703116646741:web:e0fa0e8a3a270d399aab5e"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-const authSection = document.getElementById("auth-section");
-const usernameSection = document.getElementById("username-section");
-const homeSection = document.getElementById("home-section");
-
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
-const signupBtn = document.getElementById("signupBtn");
+// Elements
+const loginForm = document.getElementById("loginForm");
+const signUpForm = document.getElementById("signUpForm");
 const logoutBtn = document.getElementById("logoutBtn");
-const usernameInput = document.getElementById("username");
-const saveUsernameBtn = document.getElementById("saveUsernameBtn");
+const postForm = document.getElementById("postForm");
+const postList = document.getElementById("postList");
+const forgotPass = document.getElementById("forgotPass");
 
-const displayName = document.getElementById("displayName");
-const postContent = document.getElementById("postContent");
-const postBtn = document.getElementById("postBtn");
-const imageInput = document.getElementById("imageInput");
-const postsContainer = document.getElementById("postsContainer");
+// Sign Up
+if (signUpForm) {
+  signUpForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = signUpForm["signUpEmail"].value;
+    const password = signUpForm["signUpPassword"].value;
 
-// Sign up
-signupBtn.onclick = async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    authSection.style.display = "none";
-    usernameSection.style.display = "block";
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-// Save username
-saveUsernameBtn.onclick = async () => {
-  const username = usernameInput.value.trim();
-  if (!username) return alert("Enter a valid username");
-  const user = auth.currentUser;
-  await updateProfile(user, { displayName: username });
-  await setDoc(doc(db, "users", user.uid), { username });
-  showHome();
-};
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        alert("Signed up successfully!");
+        window.location.href = "home.html";
+      })
+      .catch(error => alert(error.message));
+  });
+}
 
 // Login
-loginBtn.onclick = async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (err) {
-    alert(err.message);
-  }
-};
+if (loginForm) {
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = loginForm["loginEmail"].value;
+    const password = loginForm["loginPassword"].value;
 
-// Logout
-logoutBtn.onclick = () => signOut(auth);
-
-// Auth state
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (user.displayName || userDoc.exists()) {
-      showHome();
-    } else {
-      authSection.style.display = "none";
-      usernameSection.style.display = "block";
-    }
-  } else {
-    authSection.style.display = "block";
-    usernameSection.style.display = "none";
-    homeSection.style.display = "none";
-  }
-});
-
-function showHome() {
-  displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
-  authSection.style.display = "none";
-  usernameSection.style.display = "none";
-  homeSection.style.display = "block";
-  loadPosts();
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        alert("Logged in!");
+        window.location.href = "home.html";
+      })
+      .catch(error => alert(error.message));
+  });
 }
 
-// Create post
-postBtn.onclick = async () => {
-  const content = postContent.value.trim();
-  const file = imageInput.files[0];
-  if (!content && !file) return alert("Enter content or choose an image");
-
-  let imageUrl = "";
-  if (file) {
-    const storageRef = ref(storage, `posts/${Date.now()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    imageUrl = await getDownloadURL(storageRef);
-  }
-
-  await addDoc(collection(db, "posts"), {
-    content,
-    imageUrl,
-    username: auth.currentUser.displayName,
-    createdAt: serverTimestamp()
+// Forgot Password
+if (forgotPass) {
+  forgotPass.addEventListener("click", () => {
+    const email = prompt("Enter your email for password reset:");
+    if (email) {
+      auth.sendPasswordResetEmail(email)
+        .then(() => alert("Password reset link sent!"))
+        .catch(error => alert(error.message));
+    }
   });
+}
 
-  postContent.value = "";
-  imageInput.value = "";
-};
+// Logout
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    auth.signOut()
+      .then(() => {
+        alert("Logged out!");
+        window.location.href = "index.html";
+      });
+  });
+}
 
-// Load posts
+// Post Submission
+if (postForm) {
+  postForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const content = postForm["postText"].value;
+
+    const user = auth.currentUser;
+    if (user) {
+      db.collection("posts").add({
+        uid: user.uid,
+        content: content,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        postForm.reset();
+      }).catch(err => alert("Error posting: " + err));
+    }
+  });
+}
+
+// Load Posts
 function loadPosts() {
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  onSnapshot(q, (snapshot) => {
-    postsContainer.innerHTML = "";
-    snapshot.forEach((doc) => {
+  db.collection("posts").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    postList.innerHTML = "";
+    snapshot.forEach(doc => {
       const post = doc.data();
+      const date = post.createdAt?.toDate().toLocaleString() || "Just now";
+
       const div = document.createElement("div");
       div.className = "post";
-      const date = post.createdAt?.toDate();
-      const formattedTime = date ? timeAgo(date) : "Just now";
-
       div.innerHTML = `
-       <h4>${post.username}</h4>
-       <p>${post.content}</p>
-       ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-      <small style="color: gray;">${formattedTime}</small>
-    `;
-      postsContainer.appendChild(div);
+        <p>${post.content}</p>
+        <small>Posted: ${date}</small>
+      `;
+      postList.appendChild(div);
     });
   });
 }
+
+auth.onAuthStateChanged(user => {
+  if (user && postList) {
+    loadPosts();
+  }
+});
