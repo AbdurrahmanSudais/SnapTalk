@@ -1,197 +1,167 @@
+import { auth, db, storage } from './firebase.js';
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  onAuthStateChanged,
   signOut,
-  updateProfile,
+  onAuthStateChanged,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
 import {
-  getFirestore,
-  collection,
+  doc,
+  setDoc,
+  getDoc,
   addDoc,
+  collection,
   onSnapshot,
+  serverTimestamp,
   query,
   orderBy,
-  doc,
   updateDoc,
   arrayUnion,
-  arrayRemove,
+  arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 import {
-  getStorage,
   ref,
   uploadBytes,
-  getDownloadURL,
+  getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
-import { app } from "./firebase.js";
-
-// Firebase services
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
 // DOM Elements
-const authSection = document.getElementById("auth-section");
-const usernameSection = document.getElementById("username-section");
-const homeSection = document.getElementById("home-section");
-const signupForm = document.getElementById("signup-form");
 const loginForm = document.getElementById("login-form");
-const usernameForm = document.getElementById("username-form");
-const postForm = document.getElementById("post-form");
-const postsContainer = document.getElementById("postsContainer");
+const registerForm = document.getElementById("register-form");
 const logoutBtn = document.getElementById("logout-btn");
+const postForm = document.getElementById("post-form");
+const postsContainer = document.getElementById("posts");
 
-// Sign up
-signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = signupForm["signup-email"].value;
-  const password = signupForm["signup-password"].value;
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    signupForm.reset();
-  } catch (error) {
-    alert(error.message);
-  }
-});
-
-// Login
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = loginForm["login-email"].value;
-  const password = loginForm["login-password"].value;
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    loginForm.reset();
-  } catch (error) {
-    alert(error.message);
-  }
-});
-
-// Username setup
-usernameForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = usernameForm["username"].value;
-  try {
-    await updateProfile(auth.currentUser, { displayName: username });
-    usernameSection.style.display = "none";
-    homeSection.style.display = "block";
-  } catch (err) {
-    alert(err.message);
-  }
-});
-
-// Post creation
-postForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const content = postForm["post-content"].value;
-  const imageFile = postForm["post-image"].files[0];
-  let imageUrl = "";
-
-  if (imageFile) {
-    const imageRef = ref(storage, `images/${Date.now()}-${imageFile.name}`);
-    const snapshot = await uploadBytes(imageRef, imageFile);
-    imageUrl = await getDownloadURL(snapshot.ref);
-  }
-
-  const user = auth.currentUser;
-  if (user) {
-    await addDoc(collection(db, "posts"), {
-      content,
-      imageUrl,
-      createdAt: new Date(),
-      author: user.displayName,
-      likes: [],
-    });
-    postForm.reset();
-  }
-});
-
-// Auth state changes
+// Authentication
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    if (!user.displayName) {
-      authSection.style.display = "none";
-      usernameSection.style.display = "block";
-      homeSection.style.display = "none";
-    } else {
-      authSection.style.display = "none";
-      usernameSection.style.display = "none";
-      homeSection.style.display = "block";
-      loadPosts();
-    }
+    document.body.classList.add("logged-in");
+    loadPosts();
   } else {
-    authSection.style.display = "block";
-    usernameSection.style.display = "none";
-    homeSection.style.display = "none";
+    document.body.classList.remove("logged-in");
+    postsContainer.innerHTML = '';
   }
 });
 
-// Logout
-logoutBtn.addEventListener("click", () => {
-  signOut(auth);
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = e.target["register-email"].value;
+  const password = e.target["register-password"].value;
+  const username = e.target["register-username"].value;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(userCredential.user, {
+      displayName: username
+    });
+    alert("Registered successfully!");
+  } catch (error) {
+    alert(error.message);
+  }
 });
 
-// Load & display posts
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = e.target["login-email"].value;
+  const password = e.target["login-password"].value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("Logged in!");
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  alert("Logged out!");
+});
+
+// Post Submission
+postForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = e.target["post-text"].value;
+  const file = e.target["post-image"].files[0];
+  const user = auth.currentUser;
+
+  if (!user) return;
+
+  let imageUrl = "";
+  if (file) {
+    const imageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+    await uploadBytes(imageRef, file);
+    imageUrl = await getDownloadURL(imageRef);
+  }
+
+  await addDoc(collection(db, "posts"), {
+    text,
+    imageUrl,
+    username: user.displayName,
+    uid: user.uid,
+    likes: [],
+    timestamp: serverTimestamp()
+  });
+
+  e.target.reset();
+});
+
+// Load and render posts
 function loadPosts() {
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+
   onSnapshot(q, (snapshot) => {
     postsContainer.innerHTML = "";
-
     snapshot.forEach((docSnap) => {
       const post = docSnap.data();
       const postId = docSnap.id;
-      const currentUser = auth.currentUser?.uid;
+      const isLiked = post.likes.includes(auth.currentUser.uid);
 
-      const postDiv = document.createElement("div");
-      postDiv.className = "post";
+      const postEl = document.createElement("div");
+      postEl.classList.add("post");
 
-      const author = document.createElement("h3");
-      author.textContent = post.author;
+      postEl.innerHTML = `
+        <h3>${post.username}</h3>
+        <p>${post.text}</p>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image">` : ""}
+        <button class="like-btn" data-id="${postId}">
+          ${isLiked ? '❤️' : '👍'}
+        </button>
+        <span class="like-count">${post.likes.length} like${post.likes.length !== 1 ? "s" : ""}</span>
+      `;
 
-      const content = document.createElement("p");
-      content.textContent = post.content;
+      postsContainer.appendChild(postEl);
+    });
 
-      postDiv.appendChild(author);
-      postDiv.appendChild(content);
+    attachLikeHandlers();
+  });
+}
 
-      if (post.imageUrl) {
-        const img = document.createElement("img");
-        img.src = post.imageUrl;
-        postDiv.appendChild(img);
+function attachLikeHandlers() {
+  const likeButtons = document.querySelectorAll(".like-btn");
+
+  likeButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const postId = btn.dataset.id;
+      const postRef = doc(db, "posts", postId);
+      const postSnap = await getDoc(postRef);
+      const post = postSnap.data();
+      const uid = auth.currentUser.uid;
+
+      const isLiked = post.likes.includes(uid);
+
+      if (isLiked) {
+        await updateDoc(postRef, {
+          likes: arrayRemove(uid)
+        });
+      } else {
+        await updateDoc(postRef, {
+          likes: arrayUnion(uid)
+        });
       }
-
-      // Like button and count
-      const likeBtn = document.createElement("button");
-      likeBtn.className = "like-btn";
-      const hasLiked = post.likes.includes(currentUser);
-
-      likeBtn.innerHTML = hasLiked ? "❤️" : "👍";
-      if (hasLiked) likeBtn.classList.add("liked");
-
-      const likeCount = document.createElement("span");
-      likeCount.className = "like-count";
-      likeCount.textContent = post.likes.length;
-
-      likeBtn.addEventListener("click", async () => {
-        const postRef = doc(db, "posts", postId);
-        if (!hasLiked) {
-          await updateDoc(postRef, {
-            likes: arrayUnion(currentUser),
-          });
-        } else {
-          await updateDoc(postRef, {
-            likes: arrayRemove(currentUser),
-          });
-        }
-      });
-
-      postDiv.appendChild(likeBtn);
-      postDiv.appendChild(likeCount);
-      postsContainer.appendChild(postDiv);
     });
   });
-        }
+}
