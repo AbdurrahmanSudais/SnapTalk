@@ -3,6 +3,17 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
+function timeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
   authDomain: "snaptalk-b8369.firebaseapp.com",
@@ -131,7 +142,7 @@ function loadPosts() {
       const div = document.createElement("div");
       div.className = "post";
       const date = post.createdAt?.toDate();
-      const formattedTime = date ? date.toLocaleString() : "Just now";
+      const formattedTime = date ? timeAgo(date) : "Just now";
 
       div.innerHTML = `
        <h4>${post.username}</h4>
