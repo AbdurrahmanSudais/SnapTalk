@@ -137,7 +137,7 @@ function loadPosts() {
        <h4>${post.username}</h4>
        <p>${post.content}</p>
        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-       <small style="color: gray;">Posted on ${formattedTime}</small>
+       <small style="color: gray;">${formattedTime}</small>
      `;
       postsContainer.appendChild(div);
     });
