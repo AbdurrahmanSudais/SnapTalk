@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -7,29 +7,35 @@
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>SnapTalk</h1>
+  <h1>SnapTalk</h1>
 
+  <div id="auth-section">
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
-
-    <div class="buttons">
-      <button id="signup-btn">Sign Up</button>
-      <button id="login-btn">Login</button>
-      <button id="forgot-btn">Forgot Password</button>
-      <button id="logout-btn" style="display:none;">Logout</button>
-    </div>
-
-    <textarea id="post-content" placeholder="What's on your mind?" style="display:none;"></textarea>
-    <button id="post-btn" style="display:none;">Post</button>
-
-    <div id="posts" class="posts"></div>
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="index.js"></script>
+  <div id="username-section" style="display:none;">
+    <input type="text" id="username" placeholder="Choose a username" />
+    <button id="saveUsernameBtn">Save Username</button>
+  </div>
+
+  <div id="home-section" style="display:none;">
+    <div id="user-info">
+      <span id="displayName"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div id="create-post">
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <input type="file" id="imageInput" />
+      <button id="postBtn">Post</button>
+    </div>
+
+    <div id="postsContainer"></div>
+  </div>
+
+  <script type="module" src="index.js"></script>
 </body>
 </html>
