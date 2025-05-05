@@ -7,36 +7,36 @@
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <h1>SnapTalk</h1>
+  <div class="auth-container">
+    <form id="register-form">
+      <h2>Register</h2>
+      <input type="text" id="register-username" placeholder="Username" required />
+      <input type="email" id="register-email" placeholder="Email" required />
+      <input type="password" id="register-password" placeholder="Password" required />
+      <button type="submit">Register</button>
+    </form>
 
-  <div id="auth-section">
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
-    <p><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
+    <form id="login-form">
+      <h2>Login</h2>
+      <input type="email" id="login-email" placeholder="Email" required />
+      <input type="password" id="login-password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
   </div>
 
-  <div id="username-section" style="display:none;">
-    <input type="text" id="username" placeholder="Choose a username" />
-    <button id="saveUsernameBtn">Save Username</button>
+  <div class="main-container">
+    <button id="logout-btn">Logout</button>
+
+    <form id="post-form">
+      <textarea id="post-text" placeholder="What's on your mind?" required></textarea>
+      <input type="file" id="post-image" accept="image/*" />
+      <button type="submit">Post</button>
+    </form>
+
+    <div id="posts"></div>
   </div>
 
-  <div id="home-section" style="display:none;">
-    <div id="user-info">
-      <span id="displayName"></span>
-      <button id="logoutBtn">Logout</button>
-    </div>
-
-    <div id="create-post">
-      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-      <input type="file" id="imageInput" />
-      <button id="postBtn">Post</button>
-    </div>
-
-    <div id="postsContainer"></div>
-  </div>
-
+  <script type="module" src="firebase.js"></script>
   <script type="module" src="index.js"></script>
 </body>
 </html>
