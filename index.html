@@ -6,7 +6,7 @@
   <title>SnapTalk</title>
   <link rel="stylesheet" href="index.css" />
 
-  <!-- Firebase v8 SDKs -->
+  <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -15,6 +15,7 @@
   <div class="container">
     <h1 class="app-title">SnapTalk</h1>
 
+    <!-- Authentication Section -->
     <div id="auth-container">
       <input type="email" id="email" placeholder="Email" />
       <input type="password" id="password" placeholder="Password" />
@@ -23,6 +24,7 @@
       <button id="reset-btn">Forgot Password?</button>
     </div>
 
+    <!-- Post Section -->
     <div id="post-container" style="display: none;">
       <textarea id="post-input" placeholder="What's on your mind?"></textarea>
       <button id="post-btn">Post</button>
