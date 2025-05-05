@@ -1,167 +1,161 @@
-import { auth, db, storage } from './firebase.js';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+ import { auth, db, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc, ref, uploadBytes, getDownloadURL } from "./firebase.js";
 
-import {
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  collection,
-  onSnapshot,
-  serverTimestamp,
-  query,
-  orderBy,
-  updateDoc,
-  arrayUnion,
-  arrayRemove
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+const authSection = document.getElementById("auth-section");
+const usernameSection = document.getElementById("username-section");
+const homeSection = document.getElementById("home-section");
 
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const usernameInput = document.getElementById("username");
+const saveUsernameBtn = document.getElementById("saveUsernameBtn");
 
-// DOM Elements
-const loginForm = document.getElementById("login-form");
-const registerForm = document.getElementById("register-form");
-const logoutBtn = document.getElementById("logout-btn");
-const postForm = document.getElementById("post-form");
-const postsContainer = document.getElementById("posts");
+const displayName = document.getElementById("displayName");
+const postContent = document.getElementById("postContent");
+const postBtn = document.getElementById("postBtn");
+const imageInput = document.getElementById("imageInput");
+const postsContainer = document.getElementById("postsContainer");
 
-// Authentication
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.body.classList.add("logged-in");
-    loadPosts();
-  } else {
-    document.body.classList.remove("logged-in");
-    postsContainer.innerHTML = '';
-  }
-});
-
-registerForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = e.target["register-email"].value;
-  const password = e.target["register-password"].value;
-  const username = e.target["register-username"].value;
-
+// Sign up
+signupBtn.onclick = async () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCredential.user, {
-      displayName: username
-    });
-    alert("Registered successfully!");
-  } catch (error) {
-    alert(error.message);
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    authSection.style.display = "none";
+    usernameSection.style.display = "block";
+  } catch (err) {
+    alert(err.message);
   }
-});
+};
 
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = e.target["login-email"].value;
-  const password = e.target["login-password"].value;
+// Save username
+saveUsernameBtn.onclick = async () => {
+  const username = usernameInput.value.trim();
+  if (!username) return alert("Enter a valid username");
+  const user = auth.currentUser;
+  await updateProfile(user, { displayName: username });
+  await setDoc(doc(db, "users", user.uid), { username });
+  showHome();
+};
 
+// Login
+loginBtn.onclick = async () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    alert("Logged in!");
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Logout
+logoutBtn.onclick = () => signOut(auth);
+
+// Auth state
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (user.displayName || userDoc.exists()) {
+      showHome();
+    } else {
+      authSection.style.display = "none";
+      usernameSection.style.display = "block";
+    }
+  } else {
+    authSection.style.display = "block";
+    usernameSection.style.display = "none";
+    homeSection.style.display = "none";
   }
 });
 
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  alert("Logged out!");
-});
+function showHome() {
+  displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
+  authSection.style.display = "none";
+  usernameSection.style.display = "none";
+  homeSection.style.display = "block";
+  loadPosts();
+}
 
-// Post Submission
-postForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const text = e.target["post-text"].value;
-  const file = e.target["post-image"].files[0];
-  const user = auth.currentUser;
-
-  if (!user) return;
+// Create post
+postBtn.onclick = async () => {
+  const content = postContent.value.trim();
+  const file = imageInput.files[0];
+  if (!content && !file) return alert("Enter content or choose an image");
 
   let imageUrl = "";
   if (file) {
-    const imageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-    await uploadBytes(imageRef, file);
-    imageUrl = await getDownloadURL(imageRef);
+    const storageRef = ref(storage, `posts/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, file);
+    imageUrl = await getDownloadURL(storageRef);
   }
 
   await addDoc(collection(db, "posts"), {
-    text,
+    content,
     imageUrl,
-    username: user.displayName,
-    uid: user.uid,
-    likes: [],
-    timestamp: serverTimestamp()
+    username: auth.currentUser.displayName,
+    createdAt: serverTimestamp(),
+    likes: 0, // Initialize with zero likes
+    likedBy: [] // Initialize with an empty array
   });
 
-  e.target.reset();
-});
+  postContent.value = "";
+  imageInput.value = "";
+};
 
-// Load and render posts
+// Load posts
 function loadPosts() {
-  const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
     postsContainer.innerHTML = "";
-    snapshot.forEach((docSnap) => {
-      const post = docSnap.data();
-      const postId = docSnap.id;
-      const isLiked = post.likes.includes(auth.currentUser.uid);
+    snapshot.forEach((doc) => {
+      const post = doc.data();
+      const postId = doc.id;
+      const div = document.createElement("div");
+      div.className = "post";
+      const date = post.createdAt?.toDate();
+      const formattedTime = date ? date.toLocaleString() : "Just now";
 
-      const postEl = document.createElement("div");
-      postEl.classList.add("post");
-
-      postEl.innerHTML = `
-        <h3>${post.username}</h3>
-        <p>${post.text}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image">` : ""}
-        <button class="like-btn" data-id="${postId}">
-          ${isLiked ? '❤️' : '👍'}
+      div.innerHTML = `
+        <h4>${post.username}</h4>
+        <p>${post.content}</p>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
+        <small style="color: gray;">${formattedTime}</small>
+        <button class="like-btn" id="like-btn-${postId}" data-post-id="${postId}">
+          👍 ${post.likes}
         </button>
-        <span class="like-count">${post.likes.length} like${post.likes.length !== 1 ? "s" : ""}</span>
       `;
+      
+      const likeBtn = div.querySelector(`#like-btn-${postId}`);
+      likeBtn.addEventListener("click", () => toggleLike(postId));
 
-      postsContainer.appendChild(postEl);
+      postsContainer.appendChild(div);
     });
-
-    attachLikeHandlers();
   });
 }
 
-function attachLikeHandlers() {
-  const likeButtons = document.querySelectorAll(".like-btn");
+// Like/unlike post
+async function toggleLike(postId) {
+  const postRef = doc(db, "posts", postId);
+  const postSnap = await getDoc(postRef);
+  const postData = postSnap.data();
+  const userId = auth.currentUser.uid;
 
-  likeButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const postId = btn.dataset.id;
-      const postRef = doc(db, "posts", postId);
-      const postSnap = await getDoc(postRef);
-      const post = postSnap.data();
-      const uid = auth.currentUser.uid;
-
-      const isLiked = post.likes.includes(uid);
-
-      if (isLiked) {
-        await updateDoc(postRef, {
-          likes: arrayRemove(uid)
-        });
-      } else {
-        await updateDoc(postRef, {
-          likes: arrayUnion(uid)
-        });
+  if (!postData.likedBy.includes(userId)) {
+    // User hasn't liked the post yet, so we add their like
+    await setDoc(postRef, {
+      likes: postData.likes + 1,
+      likedBy: [...postData.likedBy, userId]
+    }, { merge: true });
+  } else {
+    // User has already liked the post, so we remove their like
+    const newLikedBy = postData.likedBy.filter(uid => uid !== userId);
+    await setDoc(postRef, {
+      likes: postData.likes - 1,
+      likedBy: newLikedBy
+    }, { merge: true });
+  }
       }
-    });
-  });
-}
