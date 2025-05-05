@@ -5,34 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SnapTalk</title>
   <link rel="stylesheet" href="index.css" />
-
-  <!-- Firebase SDK v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div class="container">
     <h1 class="app-title">SnapTalk</h1>
 
-    <!-- Authentication Section -->
     <div id="auth-container">
       <input type="email" id="email" placeholder="Email" />
       <input type="password" id="password" placeholder="Password" />
-      <button id="login-btn">Login</button>
-      <button id="signup-btn">Sign Up</button>
-      <button id="reset-btn">Forgot Password?</button>
+      <button onclick="login()">Login</button>
+      <button onclick="signUp()">Sign Up</button>
+      <button onclick="resetPassword()">Forgot Password?</button>
     </div>
 
-    <!-- Post Section -->
-    <div id="post-container" style="display: none;">
-      <textarea id="post-input" placeholder="What's on your mind?"></textarea>
-      <button id="post-btn">Post</button>
-      <button id="logout-btn">Logout</button>
+    <div id="app-container" style="display: none;">
+      <p id="welcome"></p>
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <button onclick="postMessage()">Post</button>
       <div id="posts"></div>
+      <button onclick="logout()">Logout</button>
     </div>
   </div>
 
-  <script src="index.js" defer></script>
+  <script src="index.js"></script>
 </body>
 </html>
