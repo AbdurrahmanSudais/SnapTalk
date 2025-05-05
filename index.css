@@ -54,3 +54,7 @@ button:hover {
   max-width: 100%;
   border-radius: 10px;
 }
+
+.emoji {
+  transition: transform 0.2s ease;
+}
