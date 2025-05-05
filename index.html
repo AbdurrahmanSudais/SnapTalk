@@ -7,36 +7,27 @@
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <h1>SnapTalk</h1>
+  <div class="container">
+    <h1>SnapTalk</h1>
 
-  <div id="auth-section">
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
-  </div>
-
-  <div id="username-section" style="display:none;">
-    <input type="text" id="username" placeholder="Choose a username" />
-    <button id="saveUsernameBtn">Save Username</button>
-  </div>
-
-  <div id="home-section" style="display:none;">
-    <div id="user-info">
-      <span id="displayName"></span>
-      <button id="logoutBtn">Logout</button>
+    <div class="auth">
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <button id="logoutBtn" style="display: none;">Logout</button>
     </div>
 
-    <div id="create-post">
-      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-      <input type="file" id="imageInput" />
+    <div id="postForm" style="display: none;">
+      <textarea id="postInput" placeholder="What's on your mind?"></textarea>
       <button id="postBtn">Post</button>
     </div>
 
-    <div id="postsContainer"></div>
+    <div id="feed"></div>
   </div>
-  <small style="color: gray;">${formattedTime}</small>
 
-  <script type="module" src="index.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>
