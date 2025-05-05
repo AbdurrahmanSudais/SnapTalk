@@ -1,6 +1,22 @@
-import { auth, db, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc, ref, uploadBytes, getDownloadURL } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
-// Get elements from the DOM
+const firebaseConfig = {
+  apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
+  authDomain: "snaptalk-b8369.firebaseapp.com",
+  projectId: "snaptalk-b8369",
+  storageBucket: "snaptalk-b8369.appspot.com",
+  messagingSenderId: "442098306088",
+  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -18,6 +34,8 @@ const postContent = document.getElementById("postContent");
 const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
+
+let userId = "";
 
 // Sign up
 signupBtn.onclick = async () => {
@@ -59,6 +77,7 @@ logoutBtn.onclick = () => signOut(auth);
 // Auth state
 onAuthStateChanged(auth, async (user) => {
   if (user) {
+    userId = user.uid;
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (user.displayName || userDoc.exists()) {
       showHome();
@@ -73,90 +92,68 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-function showHome() {
-  displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
+// Show home section after login
+const showHome = () => {
+  const user = auth.currentUser;
+  displayName.textContent = `Hello, ${user.displayName}`;
   authSection.style.display = "none";
   usernameSection.style.display = "none";
   homeSection.style.display = "block";
   loadPosts();
-}
+};
 
 // Create post
 postBtn.onclick = async () => {
-  const content = postContent.value.trim();
-  const file = imageInput.files[0];
-  if (!content && !file) return alert("Enter content or choose an image");
+  const postText = postContent.value.trim();
+  if (!postText) return alert("Post content can't be empty");
 
-  let imageUrl = "";
-  if (file) {
-    const storageRef = ref(storage, `posts/${Date.now()}-${file.name}`);
+  let postData = {
+    text: postText,
+    likes: 0,
+    timestamp: serverTimestamp(),
+    userId: userId
+  };
+
+  if (imageInput.files[0]) {
+    const file = imageInput.files[0];
+    const storageRef = ref(storage, `posts/${file.name}`);
     await uploadBytes(storageRef, file);
-    imageUrl = await getDownloadURL(storageRef);
+    const imageURL = await getDownloadURL(storageRef);
+    postData.image = imageURL;
   }
 
-  await addDoc(collection(db, "posts"), {
-    content,
-    imageUrl,
-    username: auth.currentUser.displayName,
-    createdAt: serverTimestamp(),
-    likes: 0, // Initialize with zero likes
-    likedBy: [] // Initialize with an empty array
-  });
-
-  postContent.value = "";
-  imageInput.value = "";
+  await addDoc(collection(db, "posts"), postData);
+  postContent.value = '';
+  imageInput.value = '';
 };
 
-// Load posts
-function loadPosts() {
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+// Load posts from Firestore
+const loadPosts = async () => {
+  const postsRef = collection(db, "posts");
+  const q = query(postsRef, orderBy("timestamp", "desc"));
   onSnapshot(q, (snapshot) => {
     postsContainer.innerHTML = "";
-    snapshot.forEach((doc) => {
+    snapshot.forEach(doc => {
       const post = doc.data();
-      const postId = doc.id;
-      const div = document.createElement("div");
-      div.className = "post";
-      const date = post.createdAt?.toDate();
-      const formattedTime = date ? date.toLocaleString() : "Just now";
-
-      div.innerHTML = `
-        <h4>${post.username}</h4>
-        <p>${post.content}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-        <small style="color: gray;">${formattedTime}</small>
-        <button class="like-btn" id="like-btn-${postId}" data-post-id="${postId}">
-          👍 ${post.likes}
-        </button>
+      const postElement = document.createElement("div");
+      postElement.classList.add("post");
+      postElement.innerHTML = `
+        <p>${post.text}</p>
+        ${post.image ? `<img src="${post.image}" alt="Post Image" />` : ''}
+        <button class="likeBtn" onclick="likePost('${doc.id}')">👍 ${post.likes}</button>
       `;
-      
-      const likeBtn = div.querySelector(`#like-btn-${postId}`);
-      likeBtn.addEventListener("click", () => toggleLike(postId));
-
-      postsContainer.appendChild(div);
+      postsContainer.appendChild(postElement);
     });
   });
-}
+};
 
-// Like/unlike post
-async function toggleLike(postId) {
+// Like post
+const likePost = async (postId) => {
   const postRef = doc(db, "posts", postId);
-  const postSnap = await getDoc(postRef);
-  const postData = postSnap.data();
-  const userId = auth.currentUser.uid;
-
-  if (!postData.likedBy.includes(userId)) {
-    // User hasn't liked the post yet, so we add their like
-    await setDoc(postRef, {
-      likes: postData.likes + 1,
-      likedBy: [...postData.likedBy, userId]
-    }, { merge: true });
-  } else {
-    // User has already liked the post, so we remove their like
-    const newLikedBy = postData.likedBy.filter(uid => uid !== userId);
-    await setDoc(postRef, {
-      likes: postData.likes - 1,
-      likedBy: newLikedBy
-    }, { merge: true });
+  const postDoc = await getDoc(postRef);
+  if (postDoc.exists()) {
+    const post = postDoc.data();
+    const newLikes = post.likes + 1;
+    await setDoc(postRef, { likes: newLikes }, { merge: true });
   }
-}
+};
