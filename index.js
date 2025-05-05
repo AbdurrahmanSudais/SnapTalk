@@ -1,114 +1,127 @@
 import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,
   onAuthStateChanged,
-  updateProfile
+  signOut,
+  updateProfile,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
 import {
   getFirestore,
-  doc,
-  setDoc,
-  addDoc,
   collection,
+  addDoc,
   onSnapshot,
-  serverTimestamp,
   query,
   orderBy,
-  getDoc,
+  doc,
   updateDoc,
   arrayUnion,
-  arrayRemove
+  arrayRemove,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
 import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
-  authDomain: "snaptalk-b8369.firebaseapp.com",
-  projectId: "snaptalk-b8369",
-  storageBucket: "snaptalk-b8369.appspot.com",
-  messagingSenderId: "442098306088",
-  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
-};
+import { app } from "./firebase.js";
 
-const app = initializeApp(firebaseConfig);
+// Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// DOM Elements
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
-
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
-const signupBtn = document.getElementById("signupBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const usernameInput = document.getElementById("username");
-const saveUsernameBtn = document.getElementById("saveUsernameBtn");
-
-const displayName = document.getElementById("displayName");
-const postContent = document.getElementById("postContent");
-const postBtn = document.getElementById("postBtn");
-const imageInput = document.getElementById("imageInput");
+const signupForm = document.getElementById("signup-form");
+const loginForm = document.getElementById("login-form");
+const usernameForm = document.getElementById("username-form");
+const postForm = document.getElementById("post-form");
 const postsContainer = document.getElementById("postsContainer");
+const logoutBtn = document.getElementById("logout-btn");
 
 // Sign up
-signupBtn.onclick = async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
+signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = signupForm["signup-email"].value;
+  const password = signupForm["signup-password"].value;
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    authSection.style.display = "none";
-    usernameSection.style.display = "block";
-  } catch (err) {
-    alert(err.message);
+    await createUserWithEmailAndPassword(auth, email, password);
+    signupForm.reset();
+  } catch (error) {
+    alert(error.message);
   }
-};
-
-// Save username
-saveUsernameBtn.onclick = async () => {
-  const username = usernameInput.value.trim();
-  if (!username) return alert("Enter a valid username");
-  const user = auth.currentUser;
-  await updateProfile(user, { displayName: username });
-  await setDoc(doc(db, "users", user.uid), { username });
-  showHome();
-};
+});
 
 // Login
-loginBtn.onclick = async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = loginForm["login-email"].value;
+  const password = loginForm["login-password"].value;
   try {
     await signInWithEmailAndPassword(auth, email, password);
+    loginForm.reset();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+// Username setup
+usernameForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = usernameForm["username"].value;
+  try {
+    await updateProfile(auth.currentUser, { displayName: username });
+    usernameSection.style.display = "none";
+    homeSection.style.display = "block";
   } catch (err) {
     alert(err.message);
   }
-};
+});
 
-// Logout
-logoutBtn.onclick = () => signOut(auth);
+// Post creation
+postForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const content = postForm["post-content"].value;
+  const imageFile = postForm["post-image"].files[0];
+  let imageUrl = "";
 
-// Auth state
-onAuthStateChanged(auth, async (user) => {
+  if (imageFile) {
+    const imageRef = ref(storage, `images/${Date.now()}-${imageFile.name}`);
+    const snapshot = await uploadBytes(imageRef, imageFile);
+    imageUrl = await getDownloadURL(snapshot.ref);
+  }
+
+  const user = auth.currentUser;
   if (user) {
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (user.displayName || userDoc.exists()) {
-      showHome();
-    } else {
+    await addDoc(collection(db, "posts"), {
+      content,
+      imageUrl,
+      createdAt: new Date(),
+      author: user.displayName,
+      likes: [],
+    });
+    postForm.reset();
+  }
+});
+
+// Auth state changes
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    if (!user.displayName) {
       authSection.style.display = "none";
       usernameSection.style.display = "block";
+      homeSection.style.display = "none";
+    } else {
+      authSection.style.display = "none";
+      usernameSection.style.display = "none";
+      homeSection.style.display = "block";
+      loadPosts();
     }
   } else {
     authSection.style.display = "block";
@@ -117,86 +130,68 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-function showHome() {
-  displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
-  authSection.style.display = "none";
-  usernameSection.style.display = "none";
-  homeSection.style.display = "block";
-  loadPosts();
-}
+// Logout
+logoutBtn.addEventListener("click", () => {
+  signOut(auth);
+});
 
-// Create post
-postBtn.onclick = async () => {
-  const content = postContent.value.trim();
-  const file = imageInput.files[0];
-  if (!content && !file) return alert("Enter content or choose an image");
-
-  let imageUrl = "";
-  if (file) {
-    const storageRef = ref(storage, `posts/${Date.now()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    imageUrl = await getDownloadURL(storageRef);
-  }
-
-  await addDoc(collection(db, "posts"), {
-    content,
-    imageUrl,
-    username: auth.currentUser.displayName,
-    createdAt: serverTimestamp(),
-    likes: []
-  });
-
-  postContent.value = "";
-  imageInput.value = "";
-};
-
-// Load posts
+// Load & display posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
     postsContainer.innerHTML = "";
+
     snapshot.forEach((docSnap) => {
       const post = docSnap.data();
       const postId = docSnap.id;
-      const div = document.createElement("div");
-      div.className = "post";
+      const currentUser = auth.currentUser?.uid;
 
-      const date = post.createdAt?.toDate();
-      const formattedTime = date ? date.toLocaleString() : "Just now";
+      const postDiv = document.createElement("div");
+      postDiv.className = "post";
 
-      const likedByUser = post.likes?.includes(auth.currentUser.uid);
-      const likeEmoji = likedByUser ? "❤️" : "👍";
-      const likeClass = likedByUser ? "like-btn liked" : "like-btn";
+      const author = document.createElement("h3");
+      author.textContent = post.author;
 
-      div.innerHTML = `
-        <h4>${post.username}</h4>
-        <p>${post.content}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-        <div>
-          <span class="${likeClass}" data-id="${postId}" data-liked="${likedByUser}">${likeEmoji}</span>
-          <span class="like-count">${post.likes?.length || 0}</span>
-        </div>
-        <small style="color: gray;">${formattedTime}</small>
-      `;
-      postsContainer.appendChild(div);
-    });
+      const content = document.createElement("p");
+      content.textContent = post.content;
 
-    // Attach like events
-    document.querySelectorAll(".like-btn").forEach(btn => {
-      btn.onclick = async () => {
-        const postId = btn.dataset.id;
-        const liked = btn.dataset.liked === "true";
+      postDiv.appendChild(author);
+      postDiv.appendChild(content);
+
+      if (post.imageUrl) {
+        const img = document.createElement("img");
+        img.src = post.imageUrl;
+        postDiv.appendChild(img);
+      }
+
+      // Like button and count
+      const likeBtn = document.createElement("button");
+      likeBtn.className = "like-btn";
+      const hasLiked = post.likes.includes(currentUser);
+
+      likeBtn.innerHTML = hasLiked ? "❤️" : "👍";
+      if (hasLiked) likeBtn.classList.add("liked");
+
+      const likeCount = document.createElement("span");
+      likeCount.className = "like-count";
+      likeCount.textContent = post.likes.length;
+
+      likeBtn.addEventListener("click", async () => {
         const postRef = doc(db, "posts", postId);
-        if (liked) {
+        if (!hasLiked) {
           await updateDoc(postRef, {
-            likes: arrayRemove(auth.currentUser.uid)
+            likes: arrayUnion(currentUser),
           });
         } else {
           await updateDoc(postRef, {
-            likes: arrayUnion(auth.currentUser.uid)
+            likes: arrayRemove(currentUser),
           });
         }
-      };
+      });
+
+      postDiv.appendChild(likeBtn);
+      postDiv.appendChild(likeCount);
+      postsContainer.appendChild(postDiv);
     });
   });
-    }
+        }
