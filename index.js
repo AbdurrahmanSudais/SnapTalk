@@ -37,6 +37,37 @@ const postsContainer = document.getElementById("postsContainer");
 
 let userId = "";
 
+// Time ago function
+const timeAgo = (timestamp) => {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+  const minutes = 60;
+  const hours = 60 * minutes;
+  const days = 24 * hours;
+  const months = 30 * days;
+  const years = 12 * months;
+
+  if (diffInSeconds < minutes) {
+    return "just now";
+  } else if (diffInSeconds < hours) {
+    const diffMinutes = Math.floor(diffInSeconds / minutes);
+    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < days) {
+    const diffHours = Math.floor(diffInSeconds / hours);
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < months) {
+    const diffDays = Math.floor(diffInSeconds / days);
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < years) {
+    const diffMonths = Math.floor(diffInSeconds / months);
+    return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  } else {
+    const diffYears = Math.floor(diffInSeconds / years);
+    return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+  }
+};
+
 // Sign up
 signupBtn.onclick = async () => {
   const email = emailInput.value;
@@ -109,7 +140,6 @@ postBtn.onclick = async () => {
 
   let postData = {
     text: postText,
-    likes: 0,
     timestamp: serverTimestamp(),
     userId: userId
   };
@@ -137,23 +167,17 @@ const loadPosts = async () => {
       const post = doc.data();
       const postElement = document.createElement("div");
       postElement.classList.add("post");
+
+      // Format timestamp
+      const timestamp = post.timestamp ? new Date(post.timestamp.seconds * 1000) : new Date();
+      const timeAgoText = timeAgo(timestamp);
+
       postElement.innerHTML = `
         <p>${post.text}</p>
         ${post.image ? `<img src="${post.image}" alt="Post Image" />` : ''}
-        <button class="likeBtn" onclick="likePost('${doc.id}')">👍 ${post.likes}</button>
+        <p><small>Posted ${timeAgoText}</small></p>
       `;
       postsContainer.appendChild(postElement);
     });
   });
-};
-
-// Like post
-const likePost = async (postId) => {
-  const postRef = doc(db, "posts", postId);
-  const postDoc = await getDoc(postRef);
-  if (postDoc.exists()) {
-    const post = postDoc.data();
-    const newLikes = post.likes + 1;
-    await setDoc(postRef, { likes: newLikes }, { merge: true });
-  }
 };
