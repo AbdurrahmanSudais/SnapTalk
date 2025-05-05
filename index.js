@@ -1,5 +1,6 @@
- import { auth, db, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc, ref, uploadBytes, getDownloadURL } from "./firebase.js";
+import { auth, db, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc, ref, uploadBytes, getDownloadURL } from "./firebase.js";
 
+// Get elements from the DOM
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -158,4 +159,4 @@ async function toggleLike(postId) {
       likedBy: newLikedBy
     }, { merge: true });
   }
-      }
+}
