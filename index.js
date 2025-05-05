@@ -1,143 +1,202 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  serverTimestamp,
-  orderBy,
-  query,
-  doc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  getDoc,
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
-  signInWithPopup,
-  GoogleAuthProvider,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+  onSnapshot,
+  serverTimestamp,
+  query,
+  orderBy,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB_iPYTJb5_TxzZguDdZbhyrB2tJp43Fqs",
-  authDomain: "snaptalk-v2.firebaseapp.com",
-  projectId: "snaptalk-v2",
-  storageBucket: "snaptalk-v2.appspot.com",
-  messagingSenderId: "66938774909",
-  appId: "1:66938774909:web:db72a906f53e4a0845b8cc",
-  measurementId: "G-KX4JWGVZFC",
+  apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
+  authDomain: "snaptalk-b8369.firebaseapp.com",
+  projectId: "snaptalk-b8369",
+  storageBucket: "snaptalk-b8369.appspot.com",
+  messagingSenderId: "442098306088",
+  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-const postForm = document.getElementById("postForm");
-const postsDiv = document.getElementById("posts");
+const authSection = document.getElementById("auth-section");
+const usernameSection = document.getElementById("username-section");
+const homeSection = document.getElementById("home-section");
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
-const userInfo = document.getElementById("userInfo");
-const userPic = document.getElementById("userPic");
-const userName = document.getElementById("userName");
+const signupBtn = document.getElementById("signupBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const usernameInput = document.getElementById("username");
+const saveUsernameBtn = document.getElementById("saveUsernameBtn");
 
-loginBtn.onclick = () => signInWithPopup(auth, provider);
+const displayName = document.getElementById("displayName");
+const postContent = document.getElementById("postContent");
+const postBtn = document.getElementById("postBtn");
+const imageInput = document.getElementById("imageInput");
+const postsContainer = document.getElementById("postsContainer");
 
-onAuthStateChanged(auth, (user) => {
+// Sign up
+signupBtn.onclick = async () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    authSection.style.display = "none";
+    usernameSection.style.display = "block";
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Save username
+saveUsernameBtn.onclick = async () => {
+  const username = usernameInput.value.trim();
+  if (!username) return alert("Enter a valid username");
+  const user = auth.currentUser;
+  await updateProfile(user, { displayName: username });
+  await setDoc(doc(db, "users", user.uid), { username });
+  showHome();
+};
+
+// Login
+loginBtn.onclick = async () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Logout
+logoutBtn.onclick = () => signOut(auth);
+
+// Auth state
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    loginBtn.style.display = "none";
-    userInfo.style.display = "flex";
-    userPic.src = user.photoURL;
-    userName.innerText = user.displayName;
-    postForm.style.display = "block";
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (user.displayName || userDoc.exists()) {
+      showHome();
+    } else {
+      authSection.style.display = "none";
+      usernameSection.style.display = "block";
+    }
   } else {
-    loginBtn.style.display = "block";
-    userInfo.style.display = "none";
-    postForm.style.display = "none";
+    authSection.style.display = "block";
+    usernameSection.style.display = "none";
+    homeSection.style.display = "none";
   }
 });
 
-postForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const text = postForm.text.value.trim();
-  if (!text) return;
+function showHome() {
+  displayName.textContent = `Hello, ${auth.currentUser.displayName}`;
+  authSection.style.display = "none";
+  usernameSection.style.display = "none";
+  homeSection.style.display = "block";
+  loadPosts();
+}
+
+// Create post
+postBtn.onclick = async () => {
+  const content = postContent.value.trim();
+  const file = imageInput.files[0];
+  if (!content && !file) return alert("Enter content or choose an image");
+
+  let imageUrl = "";
+  if (file) {
+    const storageRef = ref(storage, `posts/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, file);
+    imageUrl = await getDownloadURL(storageRef);
+  }
 
   await addDoc(collection(db, "posts"), {
-    text,
-    uid: auth.currentUser.uid,
-    name: auth.currentUser.displayName,
-    photo: auth.currentUser.photoURL,
-    time: serverTimestamp(),
-    likes: [],
+    content,
+    imageUrl,
+    username: auth.currentUser.displayName,
+    createdAt: serverTimestamp(),
+    likes: []
   });
 
-  postForm.reset();
+  postContent.value = "";
+  imageInput.value = "";
 };
 
-const loadPosts = () => {
-  const q = query(collection(db, "posts"), orderBy("time", "desc"));
-
+// Load posts
+function loadPosts() {
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
-    postsDiv.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const post = doc.data();
-      const postId = doc.id;
-      const userId = auth.currentUser?.uid;
-      const hasLiked = post.likes?.includes(userId);
-      const emoji = hasLiked ? "❤️" : "👍";
-      const emojiStyle = `font-size: 20px; cursor: pointer; transition: transform 0.2s ease; ${hasLiked ? "color: red;" : "color: gray;"}`;
-      const emojiSpan = `<span class="emoji" data-id="${postId}" style="${emojiStyle}">${emoji}</span>`;
+    postsContainer.innerHTML = "";
+    snapshot.forEach((docSnap) => {
+      const post = docSnap.data();
+      const postId = docSnap.id;
+      const div = document.createElement("div");
+      div.className = "post";
 
-      const postHTML = `
-        <div class="bg-white p-4 rounded shadow mt-4">
-          <div class="flex items-center mb-2">
-            <img src="${post.photo}" class="w-8 h-8 rounded-full mr-2">
-            <h2 class="font-semibold text-sm">${post.name}</h2>
-          </div>
-          <p class="text-gray-800 text-sm">${post.text}</p>
-          <div class="mt-2 flex items-center gap-2">
-            ${emojiSpan}
-            <span class="text-sm text-gray-600">${post.likes?.length || 0}</span>
-          </div>
+      const date = post.createdAt?.toDate();
+      const formattedTime = date ? date.toLocaleString() : "Just now";
+
+      const likedByUser = post.likes?.includes(auth.currentUser.uid);
+      const likeEmoji = likedByUser ? "❤️" : "👍";
+      const likeClass = likedByUser ? "like-btn liked" : "like-btn";
+
+      div.innerHTML = `
+        <h4>${post.username}</h4>
+        <p>${post.content}</p>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
+        <div>
+          <span class="${likeClass}" data-id="${postId}" data-liked="${likedByUser}">${likeEmoji}</span>
+          <span class="like-count">${post.likes?.length || 0}</span>
         </div>
+        <small style="color: gray;">${formattedTime}</small>
       `;
-      postsDiv.innerHTML += postHTML;
+      postsContainer.appendChild(div);
     });
 
-    attachLikeListeners();
+    // Attach like events
+    document.querySelectorAll(".like-btn").forEach(btn => {
+      btn.onclick = async () => {
+        const postId = btn.dataset.id;
+        const liked = btn.dataset.liked === "true";
+        const postRef = doc(db, "posts", postId);
+        if (liked) {
+          await updateDoc(postRef, {
+            likes: arrayRemove(auth.currentUser.uid)
+          });
+        } else {
+          await updateDoc(postRef, {
+            likes: arrayUnion(auth.currentUser.uid)
+          });
+        }
+      };
+    });
   });
-};
-
-const attachLikeListeners = () => {
-  document.querySelectorAll(".emoji").forEach((emoji) => {
-    emoji.onclick = async () => {
-      const postId = emoji.getAttribute("data-id");
-      const postRef = doc(db, "posts", postId);
-      const postSnap = await getDoc(postRef);
-      const postData = postSnap.data();
-      const userId = auth.currentUser?.uid;
-
-      if (!userId || !postData) return;
-
-      const hasLiked = postData.likes?.includes(userId);
-
-      // Animate
-      emoji.style.transform = "scale(1.4)";
-      setTimeout(() => emoji.style.transform = "scale(1)", 200);
-
-      if (hasLiked) {
-        await updateDoc(postRef, {
-          likes: arrayRemove(userId),
-        });
-      } else {
-        await updateDoc(postRef, {
-          likes: arrayUnion(userId),
-        });
-      }
-    };
-  });
-};
-
-loadPosts();
+    }
