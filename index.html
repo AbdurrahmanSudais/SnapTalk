@@ -8,26 +8,39 @@
 </head>
 <body>
   <div class="container">
-    <h1>SnapTalk</h1>
+    <header>
+      <h1>SnapTalk</h1>
+    </header>
 
-    <div class="auth">
+    <section class="auth-section">
       <input type="email" id="email" placeholder="Email" />
       <input type="password" id="password" placeholder="Password" />
-      <button id="loginBtn">Login</button>
+      
+      <div class="auth-buttons">
+        <button id="loginBtn">Login</button>
+        <button id="signupBtn">Sign Up</button>
+        <button id="forgotPasswordBtn">Forgot Password?</button>
+      </div>
+      
       <button id="logoutBtn" style="display: none;">Logout</button>
-    </div>
+    </section>
 
-    <div id="postForm" style="display: none;">
+    <section id="postForm" style="display: none;">
       <textarea id="postInput" placeholder="What's on your mind?"></textarea>
       <button id="postBtn">Post</button>
-    </div>
+    </section>
 
-    <div id="feed"></div>
+    <section id="feed">
+      <!-- Posts will be displayed here -->
+    </section>
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <!-- Your JavaScript file -->
   <script src="index.js"></script>
 </body>
 </html>
