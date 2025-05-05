@@ -5,7 +5,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import {
   getFirestore,
@@ -19,22 +19,24 @@ import {
   orderBy,
   getDoc,
   updateDoc,
-  increment
+  arrayUnion,
+  arrayRemove,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
   authDomain: "snaptalk-b8369.firebaseapp.com",
   projectId: "snaptalk-b8369",
   storageBucket: "snaptalk-b8369.appspot.com",
   messagingSenderId: "442098306088",
-  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
+  appId: "1:442098306088:web:280c8615656b8e4d3af91d",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -42,6 +44,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Elements
 const authSection = document.getElementById("auth-section");
 const usernameSection = document.getElementById("username-section");
 const homeSection = document.getElementById("home-section");
@@ -60,11 +63,12 @@ const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
 
+// Sign up
 signupBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await createUserWithEmailAndPassword(auth, email, password);
     authSection.style.display = "none";
     usernameSection.style.display = "block";
   } catch (err) {
@@ -72,6 +76,7 @@ signupBtn.onclick = async () => {
   }
 };
 
+// Save username
 saveUsernameBtn.onclick = async () => {
   const username = usernameInput.value.trim();
   if (!username) return alert("Enter a valid username");
@@ -81,6 +86,7 @@ saveUsernameBtn.onclick = async () => {
   showHome();
 };
 
+// Login
 loginBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -91,8 +97,10 @@ loginBtn.onclick = async () => {
   }
 };
 
+// Logout
 logoutBtn.onclick = () => signOut(auth);
 
+// Auth state
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -117,6 +125,7 @@ function showHome() {
   loadPosts();
 }
 
+// Create post
 postBtn.onclick = async () => {
   const content = postContent.value.trim();
   const file = imageInput.files[0];
@@ -134,44 +143,64 @@ postBtn.onclick = async () => {
     imageUrl,
     username: auth.currentUser.displayName,
     createdAt: serverTimestamp(),
-    likes: 0
+    likes: [],
   });
 
   postContent.value = "";
   imageInput.value = "";
 };
 
+// Load posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
     postsContainer.innerHTML = "";
     snapshot.forEach((docSnap) => {
       const post = docSnap.data();
+      const postId = docSnap.id;
       const div = document.createElement("div");
       div.className = "post";
       const date = post.createdAt?.toDate();
       const formattedTime = date ? date.toLocaleString() : "Just now";
 
+      const userId = auth.currentUser?.uid;
+      const hasLiked = post.likes?.includes(userId);
+
+      const heartStyle = hasLiked ? "color: red;" : "color: gray;";
+      const heartIcon = `<span class="heart" data-id="${postId}" style="cursor:pointer; font-size: 20px; ${heartStyle}">❤️</span>`;
+      const likesCount = post.likes?.length || 0;
+
       div.innerHTML = `
         <h4>${post.username}</h4>
         <p>${post.content}</p>
         ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-        <div style="margin-top: 0.5rem;">
-          <button class="like-btn" data-id="${docSnap.id}" style="background:#e91e63; color:white;">❤️ ${post.likes || 0}</button>
+        <div>
+          ${heartIcon} <small>${likesCount} like${likesCount !== 1 ? "s" : ""}</small>
         </div>
         <small style="color: gray;">${formattedTime}</small>
       `;
+
       postsContainer.appendChild(div);
     });
 
-    // Attach like button functionality
-    document.querySelectorAll(".like-btn").forEach((btn) => {
-      btn.onclick = async () => {
-        const postId = btn.getAttribute("data-id");
+    // Add like/unlike event listeners
+    document.querySelectorAll(".heart").forEach((heart) => {
+      heart.onclick = async () => {
+        const postId = heart.getAttribute("data-id");
         const postRef = doc(db, "posts", postId);
-        await updateDoc(postRef, {
-          likes: increment(1)
-        });
+        const postSnap = await getDoc(postRef);
+        const postData = postSnap.data();
+        const userId = auth.currentUser?.uid;
+
+        if (!userId || !postData) return;
+
+        const hasLiked = postData.likes?.includes(userId);
+
+        if (hasLiked) {
+          await updateDoc(postRef, { likes: arrayRemove(userId) });
+        } else {
+          await updateDoc(postRef, { likes: arrayUnion(userId) });
+        }
       };
     });
   });
