@@ -1,7 +1,32 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+  onSnapshot,
+  serverTimestamp,
+  query,
+  orderBy,
+  getDoc,
+  updateDoc,
+  increment
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
@@ -35,7 +60,6 @@ const postBtn = document.getElementById("postBtn");
 const imageInput = document.getElementById("imageInput");
 const postsContainer = document.getElementById("postsContainer");
 
-// Sign up
 signupBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -48,7 +72,6 @@ signupBtn.onclick = async () => {
   }
 };
 
-// Save username
 saveUsernameBtn.onclick = async () => {
   const username = usernameInput.value.trim();
   if (!username) return alert("Enter a valid username");
@@ -58,7 +81,6 @@ saveUsernameBtn.onclick = async () => {
   showHome();
 };
 
-// Login
 loginBtn.onclick = async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -69,10 +91,8 @@ loginBtn.onclick = async () => {
   }
 };
 
-// Logout
 logoutBtn.onclick = () => signOut(auth);
 
-// Auth state
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -97,7 +117,6 @@ function showHome() {
   loadPosts();
 }
 
-// Create post
 postBtn.onclick = async () => {
   const content = postContent.value.trim();
   const file = imageInput.files[0];
@@ -114,32 +133,46 @@ postBtn.onclick = async () => {
     content,
     imageUrl,
     username: auth.currentUser.displayName,
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
+    likes: 0
   });
 
   postContent.value = "";
   imageInput.value = "";
 };
 
-// Load posts
 function loadPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
     postsContainer.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const post = doc.data();
+    snapshot.forEach((docSnap) => {
+      const post = docSnap.data();
       const div = document.createElement("div");
       div.className = "post";
       const date = post.createdAt?.toDate();
       const formattedTime = date ? date.toLocaleString() : "Just now";
 
       div.innerHTML = `
-       <h4>${post.username}</h4>
-       <p>${post.content}</p>
-       ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-       <small style="color: gray;">${formattedTime}</small>
-     `;
+        <h4>${post.username}</h4>
+        <p>${post.content}</p>
+        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
+        <div style="margin-top: 0.5rem;">
+          <button class="like-btn" data-id="${docSnap.id}" style="background:#e91e63; color:white;">❤️ ${post.likes || 0}</button>
+        </div>
+        <small style="color: gray;">${formattedTime}</small>
+      `;
       postsContainer.appendChild(div);
     });
+
+    // Attach like button functionality
+    document.querySelectorAll(".like-btn").forEach((btn) => {
+      btn.onclick = async () => {
+        const postId = btn.getAttribute("data-id");
+        const postRef = doc(db, "posts", postId);
+        await updateDoc(postRef, {
+          likes: increment(1)
+        });
+      };
+    });
   });
-    }
+}
