@@ -1,43 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Media App</title>
-  <link rel="stylesheet" href="index.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SnapTalk</title>
+  <link rel="stylesheet" href="index.css" />
 </head>
 <body>
+  <div class="container">
+    <h1>SnapTalk</h1>
 
-  <!-- Authentication Section -->
-  <div id="auth-section">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
-  </div>
-
-  <!-- Username Section -->
-  <div id="username-section" style="display:none;">
-    <h2>Set Your Username</h2>
-    <input type="text" id="username" placeholder="Username">
-    <button id="saveUsernameBtn">Save</button>
-  </div>
-
-  <!-- Home Section -->
-  <div id="home-section" style="display:none;">
-    <h2 id="displayName"></h2>
-    <button id="logoutBtn">Logout</button>
-    <div>
-      <h3>Create a Post</h3>
-      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-      <input type="file" id="imageInput">
-      <button id="postBtn">Post</button>
+    <!-- Login/Signup -->
+    <div id="auth-section" class="card">
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <button id="signupBtn">Sign Up</button>
     </div>
-    <div id="postsContainer"></div>
+
+    <!-- Username Setup (after sign-up) -->
+    <div id="username-section" class="card" style="display: none;">
+      <input type="text" id="username" placeholder="Choose a username" />
+      <button id="saveUsernameBtn">Save Username</button>
+    </div>
+
+    <!-- Home Section (after login/signup) -->
+    <div id="home-section" class="card" style="display: none;">
+      <div id="user-info">
+        <span id="displayName"></span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+
+      <!-- Create Post Section -->
+      <div id="create-post">
+        <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+        <input type="file" id="imageInput" />
+        <button id="postBtn">Post</button>
+      </div>
+
+      <!-- Posts Section -->
+      <div id="postsContainer"></div>
+    </div>
   </div>
 
-  <script src="firebase.js"></script>
-  <script src="index.js"></script>
+  <script type="module" src="index.js"></script>
 </body>
 </html>
