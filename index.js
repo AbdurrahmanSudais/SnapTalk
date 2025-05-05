@@ -175,7 +175,7 @@ const loadPosts = async () => {
       postElement.innerHTML = `
         <p>${post.text}</p>
         ${post.image ? `<img src="${post.image}" alt="Post Image" />` : ''}
-        <p><small>Posted ${timeAgoText}</small></p>
+        <p><small>⏰${timeAgoText}</small></p>
       `;
       postsContainer.appendChild(postElement);
     });
