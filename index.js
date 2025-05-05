@@ -1,4 +1,3 @@
- // Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC4ZImrEgbAvJ6_pPRY3Vd34p83G5y9d4Y",
   authDomain: "snaptalk-2c001.firebaseapp.com",
@@ -15,6 +14,7 @@ const db = firebase.firestore();
 const signupBtn = document.getElementById("signup-btn");
 const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
+const forgotBtn = document.getElementById("forgot-btn");
 const postBtn = document.getElementById("post-btn");
 const postInput = document.getElementById("post-content");
 const postsContainer = document.getElementById("posts");
@@ -36,21 +36,29 @@ loginBtn.onclick = () => {
 };
 
 logoutBtn.onclick = () => {
-  auth.signOut();
-  alert("Logged out");
+  auth.signOut().then(() => alert("Logged out"));
+};
+
+forgotBtn.onclick = () => {
+  const email = document.getElementById("email").value;
+  if (!email) return alert("Please enter your email to reset password.");
+  auth.sendPasswordResetEmail(email)
+    .then(() => alert("Password reset email sent!"))
+    .catch(err => alert(err.message));
 };
 
 postBtn.onclick = () => {
   const content = postInput.value;
   const user = auth.currentUser;
-  if (user && content) {
+  if (user && content.trim() !== "") {
     db.collection("posts").add({
       uid: user.uid,
       email: user.email,
       content,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      postInput.value = "";
     });
-    postInput.value = "";
   } else {
     alert("Please login and enter content");
   }
