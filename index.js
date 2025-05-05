@@ -130,11 +130,15 @@ function loadPosts() {
       const post = doc.data();
       const div = document.createElement("div");
       div.className = "post";
+      const date = post.createdAt?.toDate();
+      const formattedTime = date ? date.toLocaleString() : "Just now";
+
       div.innerHTML = `
-        <h4>${post.username}</h4>
-        <p>${post.content}</p>
-        ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
-      `;
+       <h4>${post.username}</h4>
+       <p>${post.content}</p>
+       ${post.imageUrl ? `<img src="${post.imageUrl}" />` : ""}
+      <small style="color: gray;">${formattedTime}</small>
+    `;
       postsContainer.appendChild(div);
     });
   });
