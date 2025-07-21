@@ -1,4 +1,4 @@
-body {
+ body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(to right, #fdfbfb, #ebedee);
   margin: 0;
@@ -22,6 +22,7 @@ input, textarea, button {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1em;
+  box-sizing: border-box;
 }
 
 button {
@@ -38,6 +39,11 @@ button.alt {
 
 button:hover {
   opacity: 0.9;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 header {
@@ -59,6 +65,45 @@ header {
   box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
+.post-box textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.file-input-container {
+  position: relative;
+  margin-top: 10px;
+}
+
+.file-input-label {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #6b7280;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: 0.3s;
+}
+
+.file-input-label:hover {
+  background: #4b5563;
+}
+
+#imageInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.image-preview {
+  margin-top: 10px;
+  max-width: 200px;
+  border-radius: 8px;
+  display: none;
+}
+
 #postsContainer {
   padding: 10px 20px;
 }
@@ -71,10 +116,38 @@ header {
   box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.post-user {
+  font-weight: bold;
+  color: #3b82f6;
+}
+
+.post-time {
+  font-size: 0.8em;
+  color: #6b7280;
+}
+
+.post-content {
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
 .post img {
   max-width: 100%;
   border-radius: 10px;
   margin-top: 10px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
 }
 
 .hidden {
@@ -83,4 +156,16 @@ header {
 
 .center {
   text-align: center;
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.success-message {
+  color: #059669;
+  font-size: 0.9em;
+  margin-top: 5px;
 }
