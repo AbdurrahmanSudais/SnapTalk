@@ -6,12 +6,12 @@ import { getStorage } from "firebase/storage";
 
 // Your Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyAwa5htpDSaGtEO9P76g9WvQZ0AN9pmT6A",
-  authDomain: "snaptalk-e2507.firebaseapp.com",
-  projectId: "snaptalk-e2507",
-  storageBucket: "snaptalk-e2507.firebasestorage.app",
-  messagingSenderId: "990075195902",
-  appId: "1:990075195902:web:e14f552e75a47ec55370af"
+  apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
+  authDomain: "snaptalk-b8369.firebaseapp.com",
+  projectId: "snaptalk-b8369",
+  storageBucket: "snaptalk-b8369.firebasestorage.app",
+  messagingSenderId: "442098306088",
+  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 // Init Firebase
 const app = initializeApp(firebaseConfig);
