@@ -4,38 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SnapTalk</title>
-  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="index.css"/>
 </head>
 <body>
-  <!-- Login / Signup -->
-  <div id="auth-section">
+  <div id="auth-section" class="card center">
     <h2>Welcome to SnapTalk</h2>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
     <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
+    <button id="signupBtn" class="alt">Sign Up</button>
   </div>
 
-  <!-- Set Username -->
-  <div id="username-section" style="display:none;">
+  <div id="username-section" class="card center hidden">
     <h2>Set Username</h2>
     <input type="text" id="username" placeholder="Username" />
     <button id="saveUsernameBtn">Save</button>
   </div>
 
-  <!-- Home / Post Feed -->
-  <div id="home-section" style="display:none;">
-    <h2>Welcome, <span id="displayName"></span></h2>
-    <button id="logoutBtn">Logout</button>
-    <hr />
-    <h3>Create a Post</h3>
-    <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-    <input type="file" id="imageInput" />
-    <button id="postBtn">Post</button>
-    <hr />
-    <div id="postsContainer"></div>
+  <div id="home-section" class="hidden">
+    <header>
+      <h2 id="displayName">SnapTalk</h2>
+      <button id="logoutBtn">Logout</button>
+    </header>
+
+    <section class="post-box">
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <input type="file" id="imageInput"/>
+      <button id="postBtn">Post</button>
+    </section>
+
+    <section id="postsContainer"></section>
   </div>
 
-  <script type="module" src="index.js"></script>
+  <script src="firebase.js" type="module"></script>
+  <script src="index.js" type="module"></script>
 </body>
 </html>
+
