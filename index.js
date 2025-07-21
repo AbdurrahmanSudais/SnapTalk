@@ -24,12 +24,12 @@ import {
 
 // 🔥 Replace this with your Firebase config:
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyApKEx-bYKOqB80mlWr53up9iyIiCzv2aI",
+  authDomain: "snaptalk-b8369.firebaseapp.com",
+  projectId: "snaptalk-b8369",
+  storageBucket: "snaptalk-b8369.appspot.com",
+  messagingSenderId: "442098306088",
+  appId: "1:442098306088:web:280c8615656b8e4d3af91d"
 };
 
 // Init services
