@@ -13,12 +13,14 @@
     <input type="password" id="password" placeholder="Password" />
     <button id="loginBtn">Login</button>
     <button id="signupBtn" class="alt">Sign Up</button>
+    <div id="auth-message"></div>
   </div>
 
   <div id="username-section" class="card center hidden">
     <h2>Set Username</h2>
-    <input type="text" id="username" placeholder="Username" />
+    <input type="text" id="username" placeholder="Choose a username" />
     <button id="saveUsernameBtn">Save</button>
+    <div id="username-message"></div>
   </div>
 
   <div id="home-section" class="hidden">
@@ -26,18 +28,23 @@
       <h2 id="displayName">SnapTalk</h2>
       <button id="logoutBtn">Logout</button>
     </header>
-
+    
     <section class="post-box">
       <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-      <input type="file" id="imageInput"/>
+      <div class="file-input-container">
+        <label for="imageInput" class="file-input-label">📷 Add Photo</label>
+        <input type="file" id="imageInput" accept="image/*" />
+      </div>
+      <img id="imagePreview" class="image-preview" alt="Preview" />
       <button id="postBtn">Post</button>
+      <div id="post-message"></div>
     </section>
-
-    <section id="postsContainer"></section>
+    
+    <section id="postsContainer">
+      <div class="loading">Loading posts...</div>
+    </section>
   </div>
 
-  <script src="firebase.js" type="module"></script>
   <script src="index.js" type="module"></script>
 </body>
 </html>
-
