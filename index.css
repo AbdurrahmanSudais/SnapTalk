@@ -1,171 +1,115 @@
- body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to right, #fdfbfb, #ebedee);
+body {
   margin: 0;
-  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f2f2f2;
   color: #333;
 }
 
 .card {
+  background: white;
+  padding: 2rem;
+  margin: 3rem auto;
+  border-radius: 1rem;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
   max-width: 400px;
-  margin: 60px auto;
-  padding: 30px;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border-radius: 10px;
-}
-
-input, textarea, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1em;
-  box-sizing: border-box;
-}
-
-button {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button.alt {
-  background-color: #10b981;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #3b82f6;
-  color: white;
-  padding: 20px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-}
-
-.post-box {
-  margin: 20px;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-}
-
-.post-box textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-
-.file-input-container {
-  position: relative;
-  margin-top: 10px;
-}
-
-.file-input-label {
-  display: inline-block;
-  padding: 8px 16px;
-  background: #6b7280;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9em;
-  transition: 0.3s;
-}
-
-.file-input-label:hover {
-  background: #4b5563;
-}
-
-#imageInput {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.image-preview {
-  margin-top: 10px;
-  max-width: 200px;
-  border-radius: 8px;
-  display: none;
-}
-
-#postsContainer {
-  padding: 10px 20px;
-}
-
-.post {
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-}
-
-.post-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.post-user {
-  font-weight: bold;
-  color: #3b82f6;
-}
-
-.post-time {
-  font-size: 0.8em;
-  color: #6b7280;
-}
-
-.post-content {
-  margin: 8px 0;
-  line-height: 1.4;
-}
-
-.post img {
-  max-width: 100%;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: #6b7280;
-}
-
-.hidden {
-  display: none;
+  width: 90%;
 }
 
 .center {
   text-align: center;
 }
 
-.error-message {
-  color: #dc2626;
-  font-size: 0.9em;
-  margin-top: 5px;
+input, textarea {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.7rem 0;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
 }
 
-.success-message {
-  color: #059669;
-  font-size: 0.9em;
-  margin-top: 5px;
+button {
+  background: #5a67d8;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+button.alt {
+  background: #4caf50;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.hidden {
+  display: none;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #5a67d8;
+  color: white;
+  padding: 1rem;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.post-box {
+  background: white;
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.file-input-container {
+  margin: 1rem 0;
+}
+
+.file-input-label {
+  display: inline-block;
+  background: #edf2f7;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.image-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  margin-top: 1rem;
+  display: none;
+  border-radius: 0.5rem;
+}
+
+.post {
+  background: white;
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.post img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
 }
